@@ -29,6 +29,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -267,6 +268,32 @@ class Home : Fragment() {
             userRef.child(uid).child("checks").push().setValue(check)
         }
         requireContext().showCustomToast("Successfully added check!", R.layout.success_toast)
+
+        val workTime = (durationInSecond / 3600).toInt()
+        val calendar = Calendar.getInstance()
+        calendar.time = dateFormatter.parse(date) ?: Date()
+        val dayName = dayNameFormat.format(calendar.time)
+
+        val isWeekend = dayName == "Saturday" || dayName == "Sunday"
+
+        val finalWorkTime = if (isWeekend) 0 else workTime
+        val extraTime = if (isWeekend) workTime else 0
+        val late = !isWeekend && finalWorkTime < 8
+        val absent = finalWorkTime == 0
+
+        val timeManager = TimeManager(
+            date = date,
+            workTime = finalWorkTime,
+            extraTime = extraTime,
+            durationInSecond = durationInSecond,
+            late = late,
+            absent = absent
+        )
+
+        if (uid != null) {
+            userRef.child(uid).child("timeManager").push().setValue(timeManager)
+        }
+
     }
 
     private fun startUpdatingTime() {

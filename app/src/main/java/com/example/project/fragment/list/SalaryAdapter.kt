@@ -1,7 +1,7 @@
-/*
 package com.example.project.fragment.list
 
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +10,11 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
 import com.example.project.data.TimeManager
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
 
 class SalaryAdapter(private var timeManagers: List<TimeManager>
@@ -32,30 +34,26 @@ class SalaryAdapter(private var timeManagers: List<TimeManager>
         return TimeManagerViewHolder(view)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: TimeManagerViewHolder, position: Int) {
         val timeManager = timeManagers[position]
-
-        // Format date
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-        val formattedDate = try {
-            val date = inputFormat.parse(timeManager.date)
-            outputFormat.format(date)
-        } catch (e: Exception) {
-            timeManager.date
-        }
 
-        // Calculate salary for the day (workTime + extraTime) * 200
-        val dailySalary = (timeManager.workTime + timeManager.extraTime) * 200
+        // Skip if critical data is missing
+        val date = timeManager.date ?: return
+        val workTime = timeManager.workTime ?: 0
+        val extraTime = timeManager.extraTime ?: 0
 
-        val dayNum = timeManager.date.split("-")[2]
+        val dailySalary = (workTime + extraTime) * 50
+        val dayNum = date.split("-").getOrNull(2) ?: "01"
 
         holder.txDayNum.text = dayNum
-        holder.txDayText.text = getDayAbbreviation(timeManager.date)
-
-        holder.tvWorkTime.text = "${timeManager.workTime} hours"
-        holder.tvExtraTime.text = "${timeManager.extraTime} hours"
+        holder.txDayText.text = getDayAbbreviation(date)
+        holder.tvWorkTime.text = "$workTime hours"
+        holder.tvExtraTime.text = "$extraTime hours"
         holder.tvSalary.text = "MAD $dailySalary"
+
     }
 
     override fun getItemCount(): Int = timeManagers.size
@@ -72,4 +70,4 @@ class SalaryAdapter(private var timeManagers: List<TimeManager>
         val dayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.ENGLISH) // "EEE" gives "Fri"
         return date.format(dayFormatter)
     }
-}*/
+}
