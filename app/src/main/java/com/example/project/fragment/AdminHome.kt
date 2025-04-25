@@ -1,26 +1,25 @@
 package com.example.project.fragment
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.project.R
-import com.example.project.UserPrefs
 import com.example.project.activities.MainActivity
 import com.example.project.activities.Userdetails
-
+import com.example.project.data.User
 import com.example.project.databinding.FragmentAdminHomeBinding
 import com.example.project.fragment.adapters.UserAdapter
 import com.example.project.fragment.adapters.UserWithStatus
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,123 +27,81 @@ import java.util.Locale
 class AdminHome : Fragment() {
 
     lateinit var binding: FragmentAdminHomeBinding
-
+    lateinit var auth: FirebaseAuth
+    lateinit var userRef: DatabaseReference
     private lateinit var userAdapter: UserAdapter
-    private val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-    val adminDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
-    val userWithStatusList = mutableListOf<UserWithStatus>()
+    private val userWithStatusList = mutableListOf<UserWithStatus>()
 
-    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAdminHomeBinding.inflate(inflater, container, false)
 
-        binding.tvAdminDate.text = adminDate
+        auth = FirebaseAuth.getInstance()
+        userRef = FirebaseDatabase.getInstance().getReference("users")
 
-        binding.ivAdminProfile.setOnClickListener {
-            signOut()
-        }
+        binding.rvUsers.layoutManager = LinearLayoutManager(requireContext())
 
-        // Show loading overlay while loading initial data
-        binding.loadingOverlay.visibility = View.VISIBLE
-
-        binding.teamFilter.setOnClickListener {
-            showUserFilterBottomSheet()
-        }
-
-       /* // Initialize UserAdapter with click callback
-        userAdapter = UserAdapter(emptyList()) { user ->
-            val bundle = Bundle().apply {
-                putLong("homeUserId", user.id)
-            }
-            findNavController().navigate(R.id.toAdminAttendance, bundle)
-        }*/
-
-        /*userAdapter = UserAdapter(emptyList()) { user ->
-            val intent = Intent(requireContext(),Userdetails::class.java).apply {
-                putExtra("userId", user.id)
+        // Initialize UserAdapter with click callback
+        userAdapter = UserAdapter(userWithStatusList) { uid ->
+            val intent = Intent(requireContext(), Userdetails::class.java).apply {
+                putExtra("userId", uid)  // Pass UID to the Userdetails activity
             }
             startActivity(intent)
-        }*/
-
-/*        binding.rvUsers.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvUsers.adapter = userAdapter*/
-
-       /* userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
-        checkViewModel = ViewModelProvider(this)[CheckViewModel::class.java]
-
-        val userId = UserPrefs.loadUserId(requireContext())
-        userViewModel.getUserById(userId).observe(viewLifecycleOwner) { user ->
-            binding.tvAdminGreeting.text = "Hello, ${user.lastName}"
-
-            binding.loadingOverlay.visibility = View.GONE
         }
+        binding.rvUsers.adapter = userAdapter
+        println("1 User with status: $userWithStatusList")
 
-        userViewModel.allUsers.observe(viewLifecycleOwner) { users ->
-
-            binding.loadingOverlay.visibility = View.VISIBLE
-
-            var presentCount = 0
-            var absentCount = 0
-            var lateCount = 0
-
-            val filteredUsers = users.filter { it.role == "user" }
-
-            filteredUsers.forEach { user ->
-                checkViewModel.getChecksUserByDate(currentDate, user.id).observe(viewLifecycleOwner) { checks ->
-                        val status: String = if (checks.isNotEmpty()) {
-                            var isLate = false
-                            checks.forEach { check ->
-                                val (hourIn, _) = timeToIntPair(check.checkInTime)
-                                isLate = if ((hourIn in 9 until 13) || (hourIn in 15 until 19)) {
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
-                            if (isLate) {
-                                lateCount++
-                                "Late"
-                            } else {
-                                presentCount++
-                                "Present"
-                            }
-                        } else {
-                            absentCount++
-                            "Absent"
-                        }
-
-                        userWithStatusList.add(UserWithStatus(user, status))
-
-                        if (userWithStatusList.size == filteredUsers.size) {
-                            userAdapter.updateUsers(userWithStatusList)
-                            binding.tvPresentCount.text = presentCount.toString()
-                            binding.tvAbsentCount.text = absentCount.toString()
-                            binding.tvLateCount.text = lateCount.toString()
-
-                            userAdapter.notifyDataSetChanged()
-
-                            // Hide loading overlay after initial data is loaded
-                            binding.loadingOverlay.visibility = View.GONE
-                        }
-                    }
-            }*/
-
+        // Fetch and display users from Firebase
+        fetchUsersFromFirebase()
 
         return binding.root
     }
 
-    private fun signOut() {
-        UserPrefs.clearUserId(requireContext())
-        UserPrefs.savedIsLoggedIn(requireContext(), false)
+    private fun fetchUsersFromFirebase() {
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        val intent = Intent(requireContext(), MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        startActivity(intent)
-        requireActivity().finish()
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                userWithStatusList.clear()  // Clear list before adding new data
+
+                snapshot.children.forEach { userSnapshot ->
+                    val user = userSnapshot.getValue(User::class.java) // Get user data
+                    val uid = userSnapshot.key  // Get the UID
+
+                    // Process only users with role "user"
+                    if (user?.role == "user") {
+                        FirebaseDatabase.getInstance().getReference("checks/$uid")
+                            .child(currentDate)
+                            .get()
+                            .addOnSuccessListener { attendanceSnapshot ->
+                                val status = if (attendanceSnapshot.exists()) {
+                                    val checkInTime = attendanceSnapshot.child("checkInTime").getValue(String::class.java)
+                                    if (checkInTime != null && timeToIntPair(checkInTime).first >= 9) "Late" else "Present"
+                                } else {
+                                    "Absent"
+                                }
+
+                                userWithStatusList.add(UserWithStatus(uid ?: "", user, status))
+                                println("2 User with status: $userWithStatusList")
+
+                                // Update the adapter on the main thread
+                                requireActivity().runOnUiThread {
+                                    if (userWithStatusList.size == snapshot.childrenCount.toInt()) {
+                                        userAdapter.updateUsers(userWithStatusList)
+                                        println("3 User with status: $userWithStatusList")
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+            }
+        })
     }
 
     fun timeToIntPair(timeString: String): Pair<Int, Int> {
@@ -162,37 +119,5 @@ class AdminHome : Fragment() {
 
         return Pair(hours, minutes)
     }
-
-    @SuppressLint("MissingInflatedId")
-    private fun showUserFilterBottomSheet() {
-        val dialog = BottomSheetDialog(requireContext())
-        val view = layoutInflater.inflate(R.layout.bottom_sheet_user_filter, null)
-        dialog.setCanceledOnTouchOutside(true)
-        dialog.setContentView(view)
-        dialog.show()
-
-        val usersStatusGroup = view.findViewById<MaterialButtonToggleGroup>(R.id.userStatusGroup)
-        val reset = view.findViewById<MaterialButton>(R.id.btReset)
-        val apply = view.findViewById<MaterialButton>(R.id.btApply)
-
-        reset.setOnClickListener {
-            usersStatusGroup.clearChecked()
-        }
-
-        apply.setOnClickListener {
-            if (usersStatusGroup.checkedButtonId != -1) {
-                val status = when (usersStatusGroup.checkedButtonId) {
-                    R.id.usersPresent -> "Present"
-                    R.id.usersAbsent -> "Absent"
-                    R.id.usersLate -> "Late"
-                    else -> return@setOnClickListener
-                }
-
-                val newUsersList = userWithStatusList.filter { it.status == status }
-                userAdapter.updateUsers(newUsersList)
-
-                dialog.dismiss()
-            }
-        }
-    }
 }
+

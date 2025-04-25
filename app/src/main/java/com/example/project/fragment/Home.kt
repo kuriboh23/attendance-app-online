@@ -3,7 +3,6 @@ package com.example.project.fragment
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -11,18 +10,15 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import com.example.project.CheckCountPrefs
 import com.example.project.CheckInPrefs
 import com.example.project.R
 import com.example.project.activities.ScanActivity
-import com.example.project.UserPrefs
 import com.example.project.data.Check
 import com.example.project.data.TimeManager
-
 import com.example.project.databinding.FragmentHomeBinding
 import com.example.project.function.function.showCustomToast
 import com.google.firebase.auth.FirebaseAuth
@@ -36,19 +32,16 @@ import java.util.Locale
 class Home : Fragment() {
 
     private val requiredQrText = "Yakuza"
-
     private var checkInTime: Long? = null
     private var isCheckedIn = false
 
     private val timeFormatterHM = SimpleDateFormat("hh:mm a", Locale.getDefault())
     private val timeFormatter = SimpleDateFormat("hh:mm:ss a", Locale.getDefault())
-    private val hoursFormat = SimpleDateFormat("HH", Locale.getDefault())
-    private val minutesFormat = SimpleDateFormat("mm", Locale.getDefault())
     private val dayFormat = SimpleDateFormat("dd", Locale.getDefault())
     private val monthFormat = SimpleDateFormat("MMM", Locale.getDefault())
     private val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
     private val dayNameFormat = SimpleDateFormat("EEEE", Locale.getDefault())
-    val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     private val now = System.currentTimeMillis()
     private val dayName = dayNameFormat.format(Date())
@@ -58,49 +51,32 @@ class Home : Fragment() {
 
     private val handler = Handler()
     private lateinit var timeRunnable: Runnable
-    private lateinit var timeHourRunnable: Runnable
 
     private lateinit var binding: FragmentHomeBinding
-
     private lateinit var auth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
 
-    private lateinit var userId: String
-
     private val cameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                startQrScan()
-            } else {
-                requireContext().showCustomToast("Camera permission is required to scan", R.layout.error_toast)
-            }
+            if (isGranted) startQrScan()
+            else requireContext().showCustomToast("Camera permission is required to scan", R.layout.error_toast)
         }
 
     private val scanActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val scannedText = result.data?.getStringExtra("SCAN_RESULT")
-                scannedText?.let {
-                    handleQrResult(it)
-                }
+                scannedText?.let { handleQrResult(it) }
             }
         }
 
     @SuppressLint("SetTextI18n")
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
-        val uid = auth.currentUser?.uid
-
-        userId = UserPrefs.loadUserId(requireContext()).toString()
 
         binding.tvDate.text = "$month $day, $year - $dayName"
-
 
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED
@@ -110,51 +86,17 @@ class Home : Fragment() {
             startQrScan()
         }
 
-        val savedState = CheckInPrefs.loadCheckInState(requireContext(), userId)
-
-        if (savedState.checkInStr != null) {
-            binding.tvCheckInTime.text = savedState.checkInStr
+        auth.currentUser?.uid?.let { uid ->
+            val savedState = CheckInPrefs.loadCheckInState(requireContext())
+            if (savedState.checkInStr != null) binding.tvCheckInTime.text = savedState.checkInStr
             checkInTime = if (savedState.isCheckedIn) savedState.checkInMillis else null
             isCheckedIn = savedState.isCheckedIn
-        }
-        if (savedState.checkOutStr != null) {
-            binding.tvCheckOutTime.text = savedState.checkOutStr
-        }
-        if (savedState.duration != null) {
-            binding.tvTotalHours.text = savedState.duration
-        }
+            if (savedState.checkOutStr != null) binding.tvCheckOutTime.text = savedState.checkOutStr
+            if (savedState.duration != null) binding.tvTotalHours.text = savedState.duration
 
-        if (savedState.isCheckedIn) {
-            binding.checkBtnName.text = "Check Out"
-            binding.checkInBtn.setCardBackgroundColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.checkOut
-                )
-            )
-            binding.cardCheckInButton.setCardBackgroundColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.checkOutLight
-                )
-            )
-        } else {
-            binding.checkBtnName.text = "Check In"
-            binding.checkInBtn.setCardBackgroundColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.mainColor
-                )
-            )
-            binding.cardCheckInButton.setCardBackgroundColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.secondColor
-                )
-            )
-        }
+            updateButtonStyle(isCheckedIn)
+            updateAttendance(uid)
 
-        if (uid != null) {
             userRef.child(uid).child("lastName").get()
                 .addOnSuccessListener {
                     val lastName = it.value.toString()
@@ -180,36 +122,24 @@ class Home : Fragment() {
     private fun handleQrResult(scannedText: String) {
         if (scannedText == requiredQrText) {
             val now = System.currentTimeMillis()
-            if (isCheckedIn == false) {
-
-                // First scan: Check-in
+            if (!isCheckedIn) {
+                // Check-in
                 checkInTime = now
                 val checkInString = timeFormatterHM.format(Date(now))
                 binding.tvCheckInTime.text = checkInString
                 binding.checkBtnName.text = "Check Out"
-
                 isCheckedIn = true
-                CheckInPrefs.saveCheckIn(requireContext(), userId, true, now, checkInString)
-                CheckInPrefs.saveCheckOut(requireContext(), userId, true, "00:00", "00:00")
+
+                CheckInPrefs.saveCheckIn(requireContext(), true, now, checkInString)
+                CheckInPrefs.saveCheckOut(requireContext(),true, "00:00", "00:00")
+
 
                 binding.tvCheckOutTime.text = "00:00"
                 binding.tvTotalHours.text = "00:00"
-
-                binding.checkInBtn.setCardBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.checkOut
-                    )
-                )
-                binding.cardCheckInButton.setCardBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.checkOutLight
-                    )
-                )
+                updateButtonStyle(true)
 
             } else {
-                // Second scan: Check-out
+                // Check-out
                 checkOutFunction()
             }
         } else {
@@ -230,70 +160,79 @@ class Home : Fragment() {
         val durationStr = "${hours}h ${minutes}m"
         binding.tvTotalHours.text = durationStr
 
-        CheckInPrefs.saveCheckOut(requireContext(), userId, false, checkOutString, durationStr)
+        auth.currentUser?.uid?.let { uid ->
+            CheckInPrefs.saveCheckOut(requireContext(),false, checkOutString, durationStr)
+
+            val savedState = CheckInPrefs.loadCheckInState(requireContext())
+            val checkInTimeStr = savedState.checkInStr ?: "00:00"
+            val currentDateStr = dateFormatter.format(Date(now))
+
+            insertCheckToDatabase(uid, currentDateStr, checkInTimeStr, checkOutString, durationInSeconds)
+        }
 
         checkInTime = null
         isCheckedIn = false
+        updateButtonStyle(false)
 
-        binding.checkInBtn.setCardBackgroundColor(
-            ContextCompat.getColor(
-                requireContext(),
-                R.color.mainColor
-            )
-        )
-        binding.cardCheckInButton.setCardBackgroundColor(
-            ContextCompat.getColor(
-                requireContext(),
-                R.color.secondColor
-            )
-        )
-
-        val savedState = CheckInPrefs.loadCheckInState(requireContext(), userId)
-        var checkInTimeMillis = savedState.checkInStr
-        checkInTimeMillis = checkInTimeMillis.toString()
-
-        val currentDateStr = dateFormatter.format(Date(now))
-        insertCheckToDatabase(currentDateStr, checkInTimeMillis, checkOutString, durationInSeconds)
     }
 
     private fun insertCheckToDatabase(
+        uid: String,
         date: String,
         checkInTime: String,
         checkOutTime: String,
         durationInSecond: Long
     ) {
         val check = Check(date, checkInTime, checkOutTime, durationInSecond)
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            userRef.child(uid).child("checks").push().setValue(check)
-        }
-        requireContext().showCustomToast("Successfully added check!", R.layout.success_toast)
+        userRef.child(uid).child("checks").push().setValue(check)
 
-        val workTime = (durationInSecond / 3600).toInt()
-        val calendar = Calendar.getInstance()
-        calendar.time = dateFormatter.parse(date) ?: Date()
-        val dayName = dayNameFormat.format(calendar.time)
+        CheckCountPrefs.incrementCheckoutCount(requireContext())
+        val checkoutCount = CheckCountPrefs.getCheckoutCount(requireContext())
 
-        val isWeekend = dayName == "Saturday" || dayName == "Sunday"
+        if (checkoutCount == 2) {
+            CheckCountPrefs.saveTimeDuration(requireContext(), durationInSecond)
+            CheckCountPrefs.resetCheckoutCount(requireContext())
+            val finalDuration = CheckCountPrefs.getTimeDuration(requireContext())
 
-        val finalWorkTime = if (isWeekend) 0 else workTime
-        val extraTime = if (isWeekend) workTime else 0
-        val late = !isWeekend && finalWorkTime < 8
-        val absent = finalWorkTime == 0
+            val workTime = (finalDuration / 3600).toInt()
+            val calendar = Calendar.getInstance()
+            calendar.time = dateFormatter.parse(date) ?: Date()
+            val dayName = dayNameFormat.format(calendar.time)
 
-        val timeManager = TimeManager(
-            date = date,
-            workTime = finalWorkTime,
-            extraTime = extraTime,
-            durationInSecond = durationInSecond,
-            late = late,
-            absent = absent
-        )
+            val isWeekend = dayName == "Saturday" || dayName == "Sunday"
+            val finalWorkTime = if (isWeekend) 0 else workTime
+            val extraTime = if (isWeekend) workTime else 0
+            val absent = finalWorkTime == 0
+            val late = if(!absent)(finalWorkTime < 8) else false
 
-        if (uid != null) {
+            val timeManager = TimeManager(
+                date = date,
+                workTime = finalWorkTime,
+                extraTime = extraTime,
+                durationInSecond = finalDuration,
+                late = late,
+                absent = absent
+            )
+
             userRef.child(uid).child("timeManager").push().setValue(timeManager)
+            requireContext().showCustomToast("TimeManager pushed successfully", R.layout.success_toast)
+            CheckCountPrefs.resetTimeDuration(requireContext())
+        } else {
+            CheckCountPrefs.saveTimeDuration(requireContext(), durationInSecond)
+            requireContext().showCustomToast("Checkout saved ($checkoutCount/2)", R.layout.info_toast)
         }
+    }
 
+    private fun updateButtonStyle(checkedIn: Boolean) {
+        if (checkedIn) {
+            binding.checkBtnName.text = "Check Out"
+            binding.checkInBtn.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.checkOut))
+            binding.cardCheckInButton.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.checkOutLight))
+        } else {
+            binding.checkBtnName.text = "Check In"
+            binding.checkInBtn.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.mainColor))
+            binding.cardCheckInButton.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.secondColor))
+        }
     }
 
     private fun startUpdatingTime() {
@@ -305,9 +244,27 @@ class Home : Fragment() {
         }
         handler.post(timeRunnable)
     }
+
     private fun updateCurrentTimeText() {
         val now = System.currentTimeMillis()
         val currentTimeStr = timeFormatter.format(Date(now))
         binding.tvTime.text = currentTimeStr
     }
+
+    private fun updateAttendance(uid: String) {
+        userRef.child(uid).child("timeManager").get()
+            .addOnSuccessListener { dataSnapshot ->
+                val timeManagerList = dataSnapshot.children.mapNotNull { snapshot ->
+                    snapshot.getValue(TimeManager::class.java)
+                }
+                if (timeManagerList.isNotEmpty()) {
+                    val absentCount = timeManagerList.count { it.absent == true }
+                    val lateCount = timeManagerList.count { it.late == true }
+
+                    binding.tvAbsent.text = absentCount.toString()
+                    binding.tvLate.text = lateCount.toString()
+                }
+            }
+    }
+
 }

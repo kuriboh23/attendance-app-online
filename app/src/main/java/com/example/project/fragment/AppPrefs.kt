@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 
-object CheckInPrefs {
+object  CheckInPrefs {
     private const val PREF_NAME = "check_in_data"
     private const val KEY_CHECKED_IN = "checked_in"
     private const val KEY_CHECK_IN_TIME = "check_in_time"
@@ -12,13 +12,13 @@ object CheckInPrefs {
     private const val KEY_CHECK_OUT_STR = "check_out_str"
     private const val KEY_DURATION = "duration"
 
-    private fun getCheckPrefs(context: Context, userId: String): SharedPreferences {
-        val userPrefName = "${PREF_NAME}_$userId"
+    private fun getCheckPrefs(context: Context): SharedPreferences {
+        val userPrefName = "${PREF_NAME}"
         return context.getSharedPreferences(userPrefName, Context.MODE_PRIVATE)
     }
 
-    fun saveCheckIn(context: Context, userId: String, isCheckedIn: Boolean, timeMillis: Long, timeStr: String) {
-        getCheckPrefs(context, userId).edit().apply {
+    fun saveCheckIn(context: Context, isCheckedIn: Boolean, timeMillis: Long, timeStr: String) {
+        getCheckPrefs(context).edit().apply {
             putBoolean(KEY_CHECKED_IN, isCheckedIn)
             putString(KEY_CHECK_IN_STR, timeStr)
             putLong(KEY_CHECK_IN_TIME, timeMillis)
@@ -26,8 +26,8 @@ object CheckInPrefs {
         }
     }
 
-    fun saveCheckOut(context: Context, userId: String, isCheckedIn: Boolean, checkOutStr: String, durationStr: String) {
-        getCheckPrefs(context, userId).edit().apply {
+    fun saveCheckOut(context: Context, isCheckedIn: Boolean, checkOutStr: String, durationStr: String) {
+        getCheckPrefs(context).edit().apply {
             putBoolean(KEY_CHECKED_IN, isCheckedIn)
             putString(KEY_CHECK_OUT_STR, checkOutStr)
             putString(KEY_DURATION, durationStr)
@@ -35,8 +35,8 @@ object CheckInPrefs {
         }
     }
 
-    fun loadCheckInState(context: Context, userId: String): CheckInData {
-        val prefs = getCheckPrefs(context, userId)
+    fun loadCheckInState(context: Context): CheckInData {
+        val prefs = getCheckPrefs(context)
         return CheckInData(
             isCheckedIn = prefs.getBoolean(KEY_CHECKED_IN, false),
             checkInMillis = prefs.getLong(KEY_CHECK_IN_TIME, 0L),
@@ -46,8 +46,8 @@ object CheckInPrefs {
         )
     }
 
-    fun resetCheckInData(context: Context, userId: String) {
-        getCheckPrefs(context, userId).edit() { clear() }
+    fun resetCheckInData(context: Context) {
+        getCheckPrefs(context).edit() { clear() }
     }
 
     data class CheckInData(
@@ -106,5 +106,43 @@ object UserPrefs{
         return getUserPrefs(context).getString("role", null)
     }
 
+}
+
+object CheckCountPrefs {
+    private const val PREF_NAME = "check_count_prefs"
+    private const val KEY_CHECKOUT_COUNT = "checkout_count"
+    private const val KEY_TIME_DURATION = "time_duration"
+
+    fun getCheckoutCount(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_CHECKOUT_COUNT, 0)
+    }
+
+    fun getTimeDuration(context: Context): Long {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getLong(KEY_TIME_DURATION, 0L)
+    }
+
+    fun saveTimeDuration(context: Context, duration: Long) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val finalDuration = getTimeDuration(context) + duration
+        prefs.edit().putLong(KEY_TIME_DURATION, finalDuration).apply()
+    }
+
+    fun resetTimeDuration(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putLong(KEY_TIME_DURATION, 0L).apply()
+    }
+
+    fun incrementCheckoutCount(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val count = getCheckoutCount(context) + 1
+        prefs.edit().putInt(KEY_CHECKOUT_COUNT, count).apply()
+    }
+
+    fun resetCheckoutCount(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_CHECKOUT_COUNT, 0).apply()
+    }
 }
 

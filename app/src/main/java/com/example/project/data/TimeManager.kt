@@ -7,6 +7,6 @@ data class TimeManager(
     val workTime: Int? = null,
     val extraTime: Int? = null,
     val durationInSecond: Long? = null,
-    val late: Boolean = false,
-    val absent: Boolean = true
+    val late: Boolean? = null,
+    val absent: Boolean? = null
 )

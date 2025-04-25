@@ -12,7 +12,7 @@ import com.example.project.data.User
 
 class UserAdapter(
     private var userList: List<UserWithStatus>,
-    private val onUserClick: (User) -> Unit // Add click callback
+    private val onUserClick: (String) -> Unit // Pass UID as string
 ) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
     class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -26,9 +26,7 @@ class UserAdapter(
         return UserViewHolder(itemView)
     }
 
-    override fun getItemCount(): Int {
-        return userList.size
-    }
+    override fun getItemCount(): Int = userList.size
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val userWithStatus = userList[position]
@@ -36,7 +34,6 @@ class UserAdapter(
         holder.userName.text = "${user.lastName} ${user.name}"
         holder.userStatus.text = userWithStatus.status
 
-        // Set status color
         val context = holder.itemView.context
         val statusColor = when (userWithStatus.status.lowercase()) {
             "present" -> ContextCompat.getColor(context, R.color.mainColor)
@@ -46,9 +43,8 @@ class UserAdapter(
         }
         holder.userStatus.setTextColor(statusColor)
 
-        // Set click listener
         holder.itemView.setOnClickListener {
-            onUserClick(user)
+            onUserClick(userWithStatus.uid)  // Pass UID here
         }
     }
 
@@ -58,3 +54,4 @@ class UserAdapter(
         notifyDataSetChanged()
     }
 }
+

@@ -105,19 +105,21 @@
                                 android:padding="12dp">
 
                                 <TextView
+                                    android:id="@+id/tvLeaveCount"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0"
-                                    android:textColor="@android:color/black"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold" />
+                                    android:textColor="@color/black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Early Leaves"
                                     android:textColor="#6666CC"
-                                    android:textSize="14sp" />
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
 
@@ -138,20 +140,21 @@
                                 android:padding="12dp">
 
                                 <TextView
-                                    android:id="@+id/absentTxt"
+                                    android:id="@+id/tvAbsentCount"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0"
-                                    android:textColor="@android:color/black"
+                                    android:textColor="@color/black"
                                     android:textSize="22sp"
-                                    android:textStyle="bold" />
+                                    android:fontFamily="@font/poppins_semibold"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Absents"
                                     android:textColor="#66AACC"
-                                    android:textSize="14sp" />
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
 
@@ -172,19 +175,21 @@
                                 android:padding="12dp">
 
                                 <TextView
+                                    android:id="@+id/tvLateCount"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0"
-                                    android:textColor="@android:color/black"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold" />
+                                    android:textColor="@color/black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Late in"
                                     android:textColor="#CC6666"
-                                    android:textSize="14sp" />
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
 
@@ -205,20 +210,21 @@
                                 android:padding="12dp">
 
                                 <TextView
-                                    android:id="@+id/extraTimeTxt"
+                                    android:id="@+id/tvExtraTime"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0"
-                                    android:textColor="@android:color/black"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold" />
+                                    android:textColor="@color/black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Extra Time"
                                     android:textColor="#CCAA66"
-                                    android:textSize="14sp" />
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
                     </GridLayout>

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.project.R
 import com.example.project.UserPrefs
 import com.example.project.data.Check
+import com.example.project.data.TimeManager
 import com.example.project.databinding.FragmentAttendanceBinding
 import com.example.project.fragment.list.CheckAdapter
 import com.example.project.function.function.showCustomToast
@@ -55,44 +56,167 @@ class Attendance : Fragment() {
         binding.RecView.layoutManager = LinearLayoutManager(requireContext())
         binding.RecView.adapter = checkAdapter
 
-        val todayDate = dateFormatter.format(Date())
-
-        userRef.child(uid).child("checks").get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val checkList = snapshot.children.mapNotNull { dataSnapshot ->
-                        val check = dataSnapshot.getValue(Check::class.java)
-                        if (check?.date == todayDate) check else null
-                    }
-
-                    if (checkList.isNotEmpty()) {
-                        checkAdapter.setData(checkList)
-
-                        val weekOfMonth = Calendar.getInstance().get(Calendar.WEEK_OF_MONTH)
-                        val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
-                        val monthNameYear = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date())
-
-                        binding.tvMonthYear.text = monthNameYear
-                        binding.summaryText.text = "Summary of $monthName"
-                        binding.weeksText.text = "Week $weekOfMonth"
-                    } else {
-                        requireContext().showCustomToast("No checks for today", R.layout.error_toast)
-                        checkAdapter.setData(emptyList())
-                    }
-                } else {
-                    requireContext().showCustomToast("No check data found", R.layout.error_toast)
-                    checkAdapter.setData(emptyList())
-                }
-            }
-            .addOnFailureListener {
-                requireContext().showCustomToast("Failed to fetch data", R.layout.error_toast)
-            }
+        updateCheckCounts(uid)
 
         binding.filterMouth.setOnClickListener {
             filterByMonth(dateFormatter, uid)
         }
 
         return binding.root
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    fun updateCheckCounts(uid: String,
+      isFiltered: Boolean = false,
+      startOfWeek: String = "",
+      endOfWeek: String = "",
+      monthYear: String = "",
+      monthName: String = "",
+      weekOfMonth: Int = 0,
+      monthNameYear: String = "") {
+
+        if (!isFiltered) {
+            val todayDate = dateFormatter.format(Date())
+
+            userRef.child(uid).child("checks").get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val checkList = snapshot.children.mapNotNull { dataSnapshot ->
+                            val check = dataSnapshot.getValue(Check::class.java)
+                            if (check?.date == todayDate) check else null
+                        }
+                        if (checkList.isNotEmpty()) {
+                            checkAdapter.setData(checkList)
+
+                            val weekOfMonth = Calendar.getInstance().get(Calendar.WEEK_OF_MONTH)
+                            val monthName =
+                                SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
+                            val monthNameYear =
+                                SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date())
+
+                            binding.tvMonthYear.text = monthNameYear
+                            binding.summaryText.text = "Summary of $monthName"
+                            binding.weeksText.text = "Week $weekOfMonth"
+
+                            val earlyLeaves = checkList.count { check ->
+                                val checkOut = check.checkOutTime
+                                checkOut?.let {
+                                    val parts = it.split(" ")
+                                    val timePart = parts.getOrNull(0)
+                                    val amPm = parts.getOrNull(1)
+
+                                    val hour = timePart?.split(":")?.getOrNull(0)?.toIntOrNull()
+
+                                    if (hour != null && amPm != null) {
+                                        (amPm == "PM" && hour in 3..5) || // 3 PM to 5 PM (6 not included)
+                                                (amPm == "AM" && hour in 8..11)   // 8 AM to 11 AM
+                                    } else false
+                                } ?: false
+                            }
+
+                            binding.tvLeaveCount.text = earlyLeaves.toString()
+
+                        } else {
+                            requireContext().showCustomToast(
+                                "No checks for today",
+                                R.layout.error_toast
+                            )
+                            binding.tvLeaveCount.text = "0"
+                            checkAdapter.setData(emptyList())
+                        }
+                    } else {
+                        requireContext().showCustomToast(
+                            "No check data found",
+                            R.layout.error_toast
+                        )
+                        binding.tvLeaveCount.text = "0"
+                        checkAdapter.setData(emptyList())
+                    }
+                }
+                .addOnFailureListener {
+                    requireContext().showCustomToast("Failed to fetch data", R.layout.error_toast)
+                }
+
+            userRef.child(uid).child("timeManager").get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val timeManagerList = snapshot.children.mapNotNull { dataSnapshot ->
+                            val timeMG = dataSnapshot.getValue(TimeManager::class.java)
+                            if (timeMG?.date == todayDate) timeMG else null
+                        }
+                        if (timeManagerList.isNotEmpty()) {
+                            val absentCount = timeManagerList.count { it.absent == true }
+                            binding.tvAbsentCount.text = absentCount.toString()
+                            val lateCount = timeManagerList.count { it.late == true }
+                            binding.tvLateCount.text = lateCount.toString()
+                            val extraTimeCount = timeManagerList.sumBy { it.extraTime!! }
+                            binding.tvExtraTime.text = extraTimeCount.toString()
+                        } else {
+                            binding.tvAbsentCount.text = "0"
+                            binding.tvLateCount.text = "0"
+                            binding.tvExtraTime.text = "0"
+                        }
+                    }
+                }
+        }
+        else{
+            userRef.child(uid).child("checks").get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val checkList = snapshot.children.mapNotNull { dataSnapshot ->
+                            val check = dataSnapshot.getValue(Check::class.java)
+                            if (check?.date.toString() in startOfWeek..endOfWeek) check else null
+                        }
+                        if (checkList.isNotEmpty()) {
+                            checkAdapter.setData(checkList.sortedByDescending { it.date })
+
+                            binding.tvMonthYear.text = monthNameYear
+                            binding.summaryText.text = "Summary of $monthName"
+                            binding.weeksText.text = "Week $weekOfMonth"
+
+                            val earlyLeaves = checkList.count { check ->
+                                val checkOut = check.checkOutTime
+                                checkOut?.let {
+                                    val parts = it.split(" ")
+                                    val timePart = parts.getOrNull(0)
+                                    val amPm = parts.getOrNull(1)
+
+                                    val hour = timePart?.split(":")?.getOrNull(0)?.toIntOrNull()
+
+                                    if (hour != null && amPm != null) {
+                                        (amPm == "PM" && hour in 3..5) || // 3 PM to 5 PM (6 not included)
+                                                (amPm == "AM" && hour in 8..11)   // 8 AM to 11 AM
+                                    } else false
+                                } ?: false
+                            }
+                            binding.tvLeaveCount.text = earlyLeaves.toString()
+                        }else{
+                            checkAdapter.setData(emptyList())
+                            requireContext().showCustomToast("No Data Found", R.layout.error_toast)
+                        }
+                    }
+                }
+
+            userRef.child(uid).child("timeManager").get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val timeManagerList = snapshot.children.mapNotNull { dataSnapshot ->
+                            val timeMG = dataSnapshot.getValue(TimeManager::class.java)
+                            if (timeMG?.date?.startsWith(monthYear) == true) timeMG else null
+
+                        }
+                        if (timeManagerList.isNotEmpty()) {
+                            val absentCount = timeManagerList.count { it.absent == true }
+                            binding.tvAbsentCount.text = absentCount.toString()
+                            val lateCount = timeManagerList.count { it.late == true }
+                            binding.tvLateCount.text = lateCount.toString()
+                            val extraTimeCount = timeManagerList.sumBy { it.extraTime!! }
+                            binding.tvExtraTime.text = extraTimeCount.toString()
+                        }
+                    }
+                }
+        }
     }
 
 
@@ -110,11 +234,11 @@ class Attendance : Fragment() {
             calendar.timeInMillis = selection
 
             // Align to start of the week (Monday)
-            calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+            calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
             val startWeek = calendar.time
 
             // End of week (Friday)
-            calendar.add(Calendar.DAY_OF_WEEK, 4)
+            calendar.add(Calendar.DAY_OF_WEEK, 6)
             val endWeek = calendar.time
 
             val monthYearFormat = SimpleDateFormat("yyyy-MM", Locale.getDefault())
@@ -122,28 +246,13 @@ class Attendance : Fragment() {
 
             val startOfWeek = dateFormat.format(startWeek)
             val endOfWeek = dateFormat.format(endWeek)
+            val monthYear = monthYearFormat.format(selection)
 
             val weekOfMonth = calendar.get(Calendar.WEEK_OF_MONTH)
             val monthNameYear = monthNameYearFormat.format(startWeek)
             val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(startWeek)
 
-            userRef.child(uid).child("checks").get()
-                .addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        val checkList = snapshot.children.mapNotNull { dataSnapshot ->
-                            val check = dataSnapshot.getValue(Check::class.java)
-                            if (check?.date in startOfWeek..endOfWeek) check else null
-                        }
-                        if (checkList.isNotEmpty()) {
-                            checkAdapter.setData(checkList)
-
-                            binding.tvMonthYear.text = monthNameYear
-                            binding.summaryText.text = "Summary of $monthName"
-                            binding.weeksText.text = "Week $weekOfMonth"
-
-                        }
-                    }
-                }
+            updateCheckCounts(uid,true,startOfWeek,endOfWeek,monthYear,monthName,weekOfMonth,monthNameYear)
         }
     }
 }
