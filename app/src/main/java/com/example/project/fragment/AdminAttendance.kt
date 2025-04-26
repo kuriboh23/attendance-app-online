@@ -1,6 +1,5 @@
 package com.example.project.fragment
 
-import TeamUserAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -21,6 +20,7 @@ import com.example.project.data.Check
 import com.example.project.data.User
 import com.example.project.databinding.FragmentAdminAttendanceBinding
 import com.example.project.fragment.adapters.CheckAdapter
+import com.example.project.fragment.adapters.TeamUserAdapter
 import com.example.project.fragment.adapters.UserWithStatus
 import com.example.project.fragment.adapters.UserWithUid
 
