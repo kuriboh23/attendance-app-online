@@ -1,4 +1,5 @@
-/*
+package com.example.project.fragment.adapters
+
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
@@ -6,13 +7,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
-import com.example.project.data.User
+import com.example.project.fragment.adapters.UserWithUid
 
-class TeamUserAdapter(private var teamUsers: List<User>,
-                      private val onUserClick: (User) -> Unit) :
+class TeamUserAdapter(private var teamUsers: List<UserWithUid>,
+                      private val onUserClick: (UserWithUid) -> Unit) :
     RecyclerView.Adapter<TeamUserAdapter.ViewHolder>() {
 
-    private var fullUserList: List<User> = teamUsers
+    private var fullUserList: List<UserWithUid> = teamUsers
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val userName: TextView = itemView.findViewById(R.id.tvUserName)
@@ -27,17 +28,18 @@ class TeamUserAdapter(private var teamUsers: List<User>,
     override fun getItemCount() = teamUsers.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val user = teamUsers[position]
+        val userWithUid = teamUsers[position]
+        val user = userWithUid.user
         holder.userName.text = "${user.lastName} ${user.name}"
 
         // Set click listener
         holder.itemView.setOnClickListener {
-            onUserClick(user)
+            onUserClick(userWithUid)
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun updateUsers(newUsers: List<User>) {
+    fun updateUsers(newUsers: List<UserWithUid>) {
         fullUserList = newUsers
         teamUsers = newUsers
         notifyDataSetChanged()
@@ -49,12 +51,12 @@ class TeamUserAdapter(private var teamUsers: List<User>,
             fullUserList
         } else {
             fullUserList.filter {
-                val fullName = "${it.lastName} ${it.name}".lowercase()
-                val userId = "${it.id}".lowercase()
-                (fullName.contains(query.lowercase().trim()) || userId.contains(query.lowercase().trim())) }
+                val user = it.user
+                val fullName = "${user.lastName} ${user.name}".lowercase()
+                fullName.contains(query.lowercase().trim())
+            }
         }
         notifyDataSetChanged()
     }
 }
 
-*/

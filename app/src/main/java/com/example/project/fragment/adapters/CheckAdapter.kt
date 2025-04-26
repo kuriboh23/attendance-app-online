@@ -1,4 +1,3 @@
-/*
 package com.example.project.fragment.adapters
 
 import android.os.Build
@@ -38,19 +37,20 @@ class CheckAdapter(private var checkList: List<Check>) :
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: CheckViewHolder, position: Int) {
         val check = checkList[position]
-        val dayNum = check.date.split("-")[2]
+        if (check.date != null  && check.durationInSecond != null) {
+            val dayNum = check.date.split("-")[2]
 
-        holder.txDayNum.text = dayNum
-        holder.txDayText.text = getDayAbbreviation(check.date)
-        holder.tvCheckInTime.text = check.checkInTime
-        holder.tvCheckOutTime.text = check.checkOutTime
-        val durationInSeconds = check.durationInSecond
-        val hours = durationInSeconds / 3600
-        val minutes = (durationInSeconds % 3600) / 60
-        val durationStr = "${hours}h ${minutes}m"
-        holder.tvTotalHours.text =durationStr
+            holder.txDayNum.text = dayNum
+            holder.txDayText.text = getDayAbbreviation(check.date)
+            holder.tvCheckInTime.text = check.checkInTime
+            holder.tvCheckOutTime.text = check.checkOutTime
+            val durationInSeconds = check.durationInSecond
+            val hours = durationInSeconds / 3600
+            val minutes = (durationInSeconds % 3600) / 60
+            val durationStr = "${hours}h ${minutes}m"
+            holder.tvTotalHours.text = durationStr
+        }
     }
-
     fun updateChecks(newCheckList: List<Check>) {
         checkList = newCheckList
         notifyDataSetChanged()
@@ -63,4 +63,4 @@ class CheckAdapter(private var checkList: List<Check>) :
         val dayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.ENGLISH) // "EEE" gives "Fri"
         return date.format(dayFormatter)
     }
-}*/
+}

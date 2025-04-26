@@ -1,5 +1,6 @@
 package com.example.project.fragment
 
+import TeamUserAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -10,18 +11,27 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
+import com.example.project.data.Check
+import com.example.project.data.User
 import com.example.project.databinding.FragmentAdminAttendanceBinding
+import com.example.project.fragment.adapters.CheckAdapter
+import com.example.project.fragment.adapters.UserWithStatus
+import com.example.project.fragment.adapters.UserWithUid
 
 import com.example.project.function.function.showCustomToast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -30,11 +40,16 @@ import java.util.Locale
 class AdminAttendance : Fragment() {
 
     lateinit var binding: FragmentAdminAttendanceBinding
-
-
+    lateinit var auth: FirebaseAuth
+    lateinit var userRef: DatabaseReference
 
     private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     private val now = System.currentTimeMillis()
+    private val userWithUidList = mutableListOf<UserWithUid>()
+
+    private lateinit var teamUserAdapter: TeamUserAdapter
+    lateinit var checkAdapter: CheckAdapter
+
     val currentDateStr = dateFormatter.format(Date(now))
 
     override fun onCreateView(
@@ -43,47 +58,8 @@ class AdminAttendance : Fragment() {
     ): View {
         binding = FragmentAdminAttendanceBinding.inflate(inflater, container, false)
 
-
-       /* // Get userId from arguments
-        val userId = arguments?.getLong("homeUserId")
-
-        if (userId != null) {
-            // Show loading overlay while loading initial data
-            binding.loadingOverlay.visibility = View.VISIBLE
-
-            // Initialize CheckAdapter
-            checkAdapter = CheckAdapter(emptyList())
-            binding.rvUserCheck.layoutManager = LinearLayoutManager(requireContext())
-            binding.rvUserCheck.adapter = checkAdapter
-
-
-            // Observe user details
-            userViewModel.getUserById(userId).observe(viewLifecycleOwner) { user ->
-                binding.mainTitle.text = "${user.lastName} Attendance"
-            }
-
-            val monthNameYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-            val monthNameYear = monthNameYearFormat.format(now)
-            val monthNameFormat = SimpleDateFormat("MMMM", Locale.getDefault())
-            val monthName = monthNameFormat.format(now)
-            val weekOfMonth = Calendar.getInstance().get(Calendar.WEEK_OF_MONTH)
-
-            // Fetch initial checks
-            checkViewModel.getChecksUserByDate(currentDateStr, userId)
-                .observe(viewLifecycleOwner) { checks ->
-
-                    // Hide loading overlay after initial data is loaded
-                    binding.loadingOverlay.visibility = View.GONE
-
-                    checkAdapter.updateChecks(checks)
-                    binding.tvMonthYear.text = monthNameYear
-//                    binding.summaryText.text = "Summary of $monthName"
-                    binding.weeksText.text = "Week $weekOfMonth"
-                }
-            binding.filterMonth.setOnClickListener {
-                filterByMonth(userId, dateFormatter)
-            }
-        }*/
+        auth = FirebaseAuth.getInstance()
+        userRef = FirebaseDatabase.getInstance().getReference("users")
 
         binding.searchUser.setOnClickListener {
             showUseSearchBottomSheet()
@@ -91,19 +67,15 @@ class AdminAttendance : Fragment() {
 
         val monthNameYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         val monthNameYear = monthNameYearFormat.format(now)
-        val monthNameFormat = SimpleDateFormat("MMMM", Locale.getDefault())
-        val monthName = monthNameFormat.format(now)
-        val weekOfMonth = Calendar.getInstance().get(Calendar.WEEK_OF_MONTH)
 
         binding.tvMonthYear.text = monthNameYear
-//        binding.summaryText.text = "Summary of $monthName"
-        binding.weeksText.text = "Week $weekOfMonth"
+        binding.weeksText.isVisible = false
 
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
-    private fun filterByMonth(userId: Long, dateFormat: SimpleDateFormat) {
+    private fun filterByMonth(uid: String, dateFormat: SimpleDateFormat) {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Pick a date we will use its week")
             .build()
@@ -115,11 +87,11 @@ class AdminAttendance : Fragment() {
             calendar.timeInMillis = selection
 
             // Align to start of the week (Monday)
-            calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+            calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
             val startWeek = calendar.time
 
             // End of week (Friday)
-            calendar.add(Calendar.DAY_OF_WEEK, 4)
+            calendar.add(Calendar.DAY_OF_WEEK, 6)
             val endWeek = calendar.time
 
             val monthNameYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
@@ -131,27 +103,28 @@ class AdminAttendance : Fragment() {
             val monthNameYear = monthNameYearFormat.format(startWeek)
             val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(startWeek)
 
-           /* // Fetch checks for the selected week
-            checkViewModel.getChecksByWeek(userId, startOfWeek, endOfWeek)
-                .observe(viewLifecycleOwner) { checks ->
+            userRef.child(uid).child("checks").get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val checkList = snapshot.children.mapNotNull { dataSnapshot ->
+                            val check = dataSnapshot.getValue(Check::class.java)
+                            if (check?.date.toString() in startOfWeek..endOfWeek) check else null
+                        }
+                        if (checkList.isNotEmpty()) {
+                            checkAdapter.updateChecks(checkList.sortedByDescending { it.date })
 
-                    // Show loading overlay while loading initial data
-                    binding.loadingOverlay.visibility = View.VISIBLE
+                            binding.tvMonthYear.text = monthNameYear
+                            binding.summaryText.text = "Summary of $monthName"
+                            binding.weeksText.isVisible = true
+                            binding.weeksText.text = "Week $weekOfMonth"
 
-                    if (checks.isNotEmpty()) {
-                        checkAdapter.updateChecks(checks)
-                        binding.tvMonthYear.text = monthNameYear
-//                        binding.summaryText.text = "Summary of $monthName"
-                        binding.weeksText.text = "Week $weekOfMonth"
-                    } else {
-                        requireContext().showCustomToast("No Checks found", R.layout.error_toast)
+                        }else{
+                            checkAdapter.updateChecks(emptyList())
+                            binding.weeksText.isVisible = false
+                            requireContext().showCustomToast("No Data Found", R.layout.error_toast)
+                        }
                     }
-                    binding.loadingOverlay.visibility = View.GONE // Hide loading overlay
-                }*/
-
-            binding.filterMonth.setOnClickListener {
-                filterByMonth(userId, dateFormatter)
-            }
+                }
         }
     }
 
@@ -167,7 +140,7 @@ class AdminAttendance : Fragment() {
         val rvTeamAttendance = view.findViewById<RecyclerView>(R.id.rvTeamAttendance)
 
         // Customize search view appearance
-        val searchAutoComplete = searchView.findViewById<androidx.appcompat.widget.SearchView.SearchAutoComplete>(
+        val searchAutoComplete = searchView.findViewById<SearchView.SearchAutoComplete>(
             androidx.appcompat.R.id.search_src_text
         )
         searchAutoComplete.setTextColor(Color.BLACK)
@@ -179,56 +152,85 @@ class AdminAttendance : Fragment() {
         searchView.isIconified = false
         searchView.requestFocus()
 
-        /*// RecyclerView setup
-        teamUserAdapter = TeamUserAdapter(emptyList()){ user ->
+        teamUserAdapter = TeamUserAdapter(userWithUidList) { user ->
             dialog.dismiss()
-            val userId = user.id*/
-/*
+            val userUid = user.uid
+
+            binding.teamText.text = "${user.user.lastName} Attendance"
+
             checkAdapter = CheckAdapter(emptyList())
             binding.rvUserCheck.layoutManager = LinearLayoutManager(requireContext())
-            binding.rvUserCheck.adapter = checkAdapter*/
+            binding.rvUserCheck.adapter = checkAdapter
 
-            /*userViewModel.getUserById(userId).observe(viewLifecycleOwner) { user ->
-                binding.mainTitle.text = "${user.lastName} Attendance"
-            }
-            // Fetch initial checks
-            checkViewModel.getChecksUserByDate(currentDateStr, userId)
-                .observe(viewLifecycleOwner) { checks ->
-                    // Show loading overlay while loading initial data
-                    binding.loadingOverlay.visibility = View.VISIBLE
+            userRef
+                .child(userUid)
+                .child("checks")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val checksList = snapshot.children.mapNotNull { checkSnapshot ->
+                            val check = checkSnapshot.getValue(Check::class.java)
+                            if (check?.date.toString() == currentDateStr) check else null
+                        }
+                        if (checksList.isNotEmpty()) {
+                            checkAdapter.updateChecks(checksList)
 
-                    checkAdapter.updateChecks(checks)
+                            val weekOfMonth = Calendar.getInstance().get(Calendar.WEEK_OF_MONTH)
+                            val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
+                            val monthNameYear = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date())
 
-                    // Hide loading overlay after initial data is loaded
-                    binding.loadingOverlay.visibility = View.GONE
+                            binding.tvMonthYear.text = monthNameYear
+                            binding.summaryText.text = "Summary of $monthName"
+                            binding.weeksText.isVisible = true
+                            binding.weeksText.text = "Week $weekOfMonth"
+                        }
+                    }
                 }
-
             binding.filterMonth.setOnClickListener {
-                filterByMonth(userId, dateFormatter)
+                filterByMonth(user.uid, dateFormatter)
             }
         }
+
         rvTeamAttendance.layoutManager = LinearLayoutManager(requireContext())
         rvTeamAttendance.adapter = teamUserAdapter
 
-        userViewModel.allUsers.observe(viewLifecycleOwner) { users ->
-            // Show loading overlay while loading initial data
-            binding.loadingOverlay.visibility = View.VISIBLE
+        fetchUsers(searchView)
 
-            val filteredUsers = users.filter { it.role == "user" }
-            teamUserAdapter.updateUsers(filteredUsers)
+    }
 
-            // Hide loading overlay after initial data is loaded
-            binding.loadingOverlay.visibility = View.GONE
-        }
-
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean = true
-            override fun onQueryTextChange(newText: String?): Boolean {
-                teamUserAdapter.filterUsers(newText.orEmpty())
-                return true
+    private fun fetchUsers(searchView: SearchView) {
+        userRef.get().addOnSuccessListener { snapshot ->
+            val users = snapshot.children.mapNotNull { snap ->
+                val user = snap.getValue(User::class.java)
+                val uid = snap.key
+                if (user?.role == "user" && uid != null) uid to user else null
             }
-        })
-*/
+
+            if (users.isEmpty()) return@addOnSuccessListener
+
+            userWithUidList.clear()
+            var loadedCount = 0
+
+            users.forEach { (uid, user) ->
+                userWithUidList.add(UserWithUid(uid, user))
+                loadedCount++
+                // Update UI once all users are loaded
+                if (loadedCount == users.size) {
+                    teamUserAdapter.updateUsers(userWithUidList)
+
+                    searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                        override fun onQueryTextSubmit(query: String?): Boolean = true
+                        override fun onQueryTextChange(newText: String?): Boolean {
+                            teamUserAdapter.filterUsers(newText.orEmpty())
+                            return true
+                        }
+                    })
+                }
+            }
+        }.addOnFailureListener {
+            // Handle error if users cannot be retrieved
+            teamUserAdapter.updateUsers(emptyList())
+        }
     }
 
 }

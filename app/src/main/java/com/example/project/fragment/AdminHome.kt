@@ -38,6 +38,8 @@ class AdminHome : Fragment() {
     private lateinit var userAdapter: UserAdapter
     private val userWithStatusList = mutableListOf<UserWithStatus>()
 
+    val adminDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,6 +49,7 @@ class AdminHome : Fragment() {
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
 
+        binding.tvAdminDate.text = adminDate
         binding.rvUsers.layoutManager = LinearLayoutManager(requireContext())
 
         // Initialize UserAdapter with click callback
@@ -123,10 +126,7 @@ class AdminHome : Fragment() {
                         val (h,_) = timeToIntPair(latestCheckInTime?:"08:00 AM")
                         println("Hour $h")
 
-
                             userWithStatusList.add(UserWithStatus(uid, user, status))
-
-
 
                         loadedCount++
 
@@ -200,7 +200,7 @@ class AdminHome : Fragment() {
         }
     }
 
-        fun timeToIntPair(timeString: String): Pair<Int, Int> {
+    fun timeToIntPair(timeString: String): Pair<Int, Int> {
         val parts = timeString.split(" ")
         val timeParts = parts[0].split(":")
         var hours = timeParts[0].toInt()
