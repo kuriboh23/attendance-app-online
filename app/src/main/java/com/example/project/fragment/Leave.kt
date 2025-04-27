@@ -37,6 +37,7 @@ class Leave : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
 
+    @SuppressLint("NotifyDataSetChanged")
     private val applyLeaveLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -53,6 +54,7 @@ class Leave : Fragment() {
                 requireActivity().finish()
             }
         }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

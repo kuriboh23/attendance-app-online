@@ -221,6 +221,9 @@ class ApplyLeave : AppCompatActivity() {
             .push()
             .setValue(leave)
             .addOnSuccessListener {
+                // Prepare the result data
+                val resultIntent = Intent()
+                setResult(RESULT_OK, resultIntent)
                 finish()
             }
             .addOnFailureListener {

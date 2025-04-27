@@ -37,13 +37,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Handle special action (sign out)
         bottomNav.setOnItemSelectedListener { item ->
-            if (item.itemId == R.id.nav_notify) {
-                signOut()
-                true
-            } else {
+
                 navController.navigate(item.itemId)
                 true
-            }
         }
     }
 

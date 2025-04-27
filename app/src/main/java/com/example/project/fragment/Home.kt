@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment
 import com.example.project.CheckCountPrefs
 import com.example.project.CheckInPrefs
 import com.example.project.R
+import com.example.project.UserPrefs
+import com.example.project.activities.MainActivity
 import com.example.project.activities.ScanActivity
 import com.example.project.data.Check
 import com.example.project.data.TimeManager
@@ -104,7 +106,20 @@ class Home : Fragment() {
                 }
         }
 
+        binding.ivProfile.setOnClickListener {
+            signOut()
+        }
+
         return binding.root
+    }
+    private fun signOut() {
+        UserPrefs.savedIsLoggedIn(requireContext(), false)
+
+        val intent = Intent(requireContext(), MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     override fun onStart() {

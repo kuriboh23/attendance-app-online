@@ -153,7 +153,7 @@ class AdminAttendance : Fragment() {
         searchView.isIconified = false
         searchView.requestFocus()
 
-        teamUserAdapter = TeamUserAdapter(userWithUidList) { user ->
+        teamUserAdapter = TeamUserAdapter(userWithUidList,"Checks") { user ->
             dialog.dismiss()
             val userUid = user.uid
 

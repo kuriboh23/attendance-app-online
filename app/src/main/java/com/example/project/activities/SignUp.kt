@@ -26,7 +26,7 @@ class SignUp : AppCompatActivity() {
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        firebaseRef = FirebaseDatabase.getInstance().getReference("users") // ✅ Fixed path
+        firebaseRef = FirebaseDatabase.getInstance().getReference("users")
         auth = FirebaseAuth.getInstance()
 
         back = findViewById(R.id.arrowLeft)

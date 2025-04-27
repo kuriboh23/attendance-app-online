@@ -11,6 +11,7 @@ import com.example.project.R
 import com.example.project.fragment.adapters.UserWithUid
 
 class TeamUserAdapter(private var teamUsers: List<UserWithUid>,
+                      private val status: String,
                       private val onUserClick: (UserWithUid) -> Unit) :
     RecyclerView.Adapter<TeamUserAdapter.ViewHolder>() {
 
@@ -33,7 +34,7 @@ class TeamUserAdapter(private var teamUsers: List<UserWithUid>,
         val userWithUid = teamUsers[position]
         val user = userWithUid.user
         holder.userName.text = "${user.lastName} ${user.name}"
-        holder.userStatus.text = "Checks"
+        holder.userStatus.text = status
         // Set click listener
         holder.itemView.setOnClickListener {
             onUserClick(userWithUid)
