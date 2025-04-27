@@ -102,7 +102,9 @@ class AdminHome : Fragment() {
                             if (date == currentDate) {
                                 val checkInTime = check.child("checkInTime").getValue(String::class.java)
                                 if (checkInTime != null) {
-                                    if (latestCheckInTime == null || timeToIntPair(checkInTime).first > timeToIntPair(latestCheckInTime).first) {
+                                    if (latestCheckInTime == null || timeToIntPair(checkInTime).first > timeToIntPair(
+                                            latestCheckInTime!!
+                                        ).first) {
                                         latestCheckInTime = checkInTime
                                     }
                                 }
@@ -111,7 +113,7 @@ class AdminHome : Fragment() {
 
                         // Determine the status based on the latest check-in time
                         val status = if (latestCheckInTime != null) {
-                            val (hour, _) = timeToIntPair(latestCheckInTime)
+                            val (hour, _) = timeToIntPair(latestCheckInTime!!)
                             when {
                                 hour in 8..8 -> "Present"         // 08:00 - 08:59 => Present
                                 hour in 9..11 -> "Late"            // 09:00 - 11:59 => Late
@@ -123,12 +125,8 @@ class AdminHome : Fragment() {
                         } else {
                             "Absent"
                         }
-                        val (h,_) = timeToIntPair(latestCheckInTime?:"08:00 AM")
-                        println("Hour $h")
-
                             userWithStatusList.add(UserWithStatus(uid, user, status))
-
-                        loadedCount++
+                            loadedCount++
 
                         // Update UI once all users are loaded
                         if (loadedCount == users.size) {
@@ -159,6 +157,7 @@ class AdminHome : Fragment() {
         requireActivity().finish()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUIWithUserStatus() {
         userAdapter.updateUsers(userWithStatusList)
 

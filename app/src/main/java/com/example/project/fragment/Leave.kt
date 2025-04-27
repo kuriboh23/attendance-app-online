@@ -1,5 +1,6 @@
 package com.example.project.fragment
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -95,6 +96,7 @@ class Leave : Fragment() {
             }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateSummary(leaves: List<Leave>) {
         binding.tvTotalLeaves.text = leaves.size.toString()
         binding.tvCasualLeaves.text = leaves.count { it.type == "Casual" }.toString()
@@ -113,7 +115,7 @@ class Leave : Fragment() {
         view.findViewById<TextView>(R.id.tvLeaveDetailType).text = leave.type
         view.findViewById<TextView>(R.id.tvLeaveDetailStatus).apply {
             text = leave.status
-            when (leave.status?.lowercase()) {
+            when (leave.status.lowercase()) {
                 "approved" -> setBackgroundResource(R.drawable.status_approved)
                 "rejected" -> setBackgroundResource(R.drawable.status_rejected)
                 "pending" -> setBackgroundResource(R.drawable.status_pending)

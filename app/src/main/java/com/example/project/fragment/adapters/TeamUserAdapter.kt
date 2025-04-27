@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
 import com.example.project.fragment.adapters.UserWithUid
@@ -17,6 +18,7 @@ class TeamUserAdapter(private var teamUsers: List<UserWithUid>,
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val userName: TextView = itemView.findViewById(R.id.tvUserName)
+        val userStatus: TextView = itemView.findViewById(R.id.tvUserStatus)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,7 +33,7 @@ class TeamUserAdapter(private var teamUsers: List<UserWithUid>,
         val userWithUid = teamUsers[position]
         val user = userWithUid.user
         holder.userName.text = "${user.lastName} ${user.name}"
-
+        holder.userStatus.text = "Checks"
         // Set click listener
         holder.itemView.setOnClickListener {
             onUserClick(userWithUid)

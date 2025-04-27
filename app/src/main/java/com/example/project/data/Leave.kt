@@ -6,6 +6,6 @@ data class Leave(
     val endDate: String = "",
     val type: String = "",
     val note: String = "",
-    val status: String = "",
+    var status: String = "",
     val attachmentUrl: String? = null
 )

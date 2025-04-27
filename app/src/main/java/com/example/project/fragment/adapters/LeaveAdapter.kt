@@ -1,6 +1,6 @@
-/*
 package com.example.project.fragment.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +11,10 @@ import com.example.project.R
 import com.example.project.data.Leave
 import com.example.project.data.User
 
-class LeaveAdapter(
-    private val onLeaveClick: (Leave) -> Unit
+class LeaveAdapter( private var leaveList: List<LeaveWithUser>,
+    private val onLeaveClick: (LeaveWithUser) -> Unit
 ) : RecyclerView.Adapter<LeaveAdapter.LeaveViewHolder>() {
 
-    private var leaveList: List<Leave> = emptyList()
-    private var userMap: Map<Long, User> = emptyMap()
 
     class LeaveViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvFullName: TextView = itemView.findViewById(R.id.tvFullName)
@@ -32,17 +30,17 @@ class LeaveAdapter(
 
     override fun onBindViewHolder(holder: LeaveViewHolder, position: Int) {
         val leave = leaveList[position]
-        val user = userMap[leave.userId] // Get the user from the map
+        val user = leave.user
         holder.tvFullName.text = if (user != null) {
             "${user.lastName} ${user.name}"
         } else {
             "Unknown"
         }
-        holder.tvLeaveType.text = "${leave.type}"
-        holder.tvStatus.text = "${leave.status}"
+        holder.tvLeaveType.text = "${leave.leave.type}"
+        holder.tvStatus.text = "${leave.leave.status}"
 
         val context = holder.itemView.context
-        val statusColor = when (leave.status.lowercase()) {
+        val statusColor = when (leave.leave.status.lowercase()) {
             "approved" -> ContextCompat.getColor(context, android.R.color.holo_green_dark)
             "rejected" -> ContextCompat.getColor(context, android.R.color.holo_red_dark)
             "pending" -> ContextCompat.getColor(context, android.R.color.holo_orange_dark)
@@ -59,11 +57,11 @@ class LeaveAdapter(
         return leaveList.size
     }
 
-    fun setData(newLeaveList: List<Leave>, newUserMap: Map<Long, User>) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(newLeaveList: List<LeaveWithUser>) {
         leaveList = newLeaveList
-        userMap = newUserMap
         notifyDataSetChanged()
 
     }
 
-}*/
+}

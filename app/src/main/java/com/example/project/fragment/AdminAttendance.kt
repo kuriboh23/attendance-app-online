@@ -142,11 +142,12 @@ class AdminAttendance : Fragment() {
         // Customize search view appearance
         val searchAutoComplete = searchView.findViewById<SearchView.SearchAutoComplete>(
             androidx.appcompat.R.id.search_src_text
-        )
-        searchAutoComplete.setTextColor(Color.BLACK)
-        searchAutoComplete.setHintTextColor(R.color.black)
-        searchAutoComplete.setHint("Search by name or id...")
-        searchAutoComplete.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+        ).apply {
+            setTextColor(Color.BLACK)
+            setHintTextColor(R.color.black)
+            setHint("Search by name...")
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+        }
 
         // Make search bar focused and open keyboard
         searchView.isIconified = false
