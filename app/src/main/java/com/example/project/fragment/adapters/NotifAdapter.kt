@@ -31,9 +31,9 @@ class NotifAdapter(private val notifList: List<Notif>) :
 
             // Optional: Change icon based on type
             when (notif.type) {
-                "leave_approved" -> ivIcon.setImageResource(R.drawable.check_done)
-                "leave_rejected" -> ivIcon.setImageResource(R.drawable.error_red) // example rejected icon
-                else -> ivIcon.setImageResource(R.drawable.notification_fill_v1)   // default notification icon
+                "leave_approved" -> ivIcon.setImageResource(R.drawable.approve_v0)
+                "leave_rejected" -> ivIcon.setImageResource(R.drawable.reject_v0) // example rejected icon
+                else -> ivIcon.setImageResource(R.drawable.info)   // default notification icon
             }
         }
     }

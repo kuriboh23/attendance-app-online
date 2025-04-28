@@ -40,7 +40,8 @@
                 android:layout_height="match_parent"
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/item_notification"
-                android:padding="24dp"/>
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="12dp"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

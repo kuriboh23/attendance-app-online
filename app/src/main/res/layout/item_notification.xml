@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true"
-    android:background="@drawable/rounded_outline_button"
-    android:backgroundTint="@color/gray_light"
     android:layout_marginBottom="12dp"
+    android:background="@drawable/rounded_outline_button"
+    android:backgroundTint="@color/whiteLight"
     android:orientation="vertical">
 
 <!--    <androidx.cardview.widget.CardView
@@ -23,6 +23,9 @@
             android:paddingStart="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
+            android:background="@drawable/rounded_outline_button"
+            android:backgroundTint="@color/whiteLight"
             android:orientation="horizontal">
 
             <ImageView

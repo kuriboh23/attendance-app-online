@@ -72,115 +72,155 @@
                         android:textColor="@color/gray_black" />
 
                     <GridLayout
+                        android:id="@+id/gridAttendanceSummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:columnCount="2"
-                        android:rowCount="2">
+                        android:layout_marginTop="8dp"
+                        android:rowCount="2"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/summaryText">
 
-                        <!-- Total Leaves Taken -->
-                        <LinearLayout
+                        <!-- Early Leaves -->
+                        <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_columnWeight="1"
-                            android:orientation="vertical"
-                            android:padding="8dp">
+                            android:layout_margin="4dp"
+                            app:cardBackgroundColor="#F0F0FF"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                            <TextView
-                                android:id="@+id/tvTotalLeaves"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="45"
-                                android:textColor="@color/gray_black"
-                                android:textSize="22sp"
-                                android:fontFamily="@font/poppins_bold" />
+                                android:orientation="vertical"
+                                android:padding="12dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Total Leaves"
-                                android:textColor="@color/gray_black"
-                                android:textSize="14sp"
-                                android:fontFamily="@font/poppins" />
-                        </LinearLayout>
+                                <TextView
+                                    android:id="@+id/tvTotalLeaves"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/gray_black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
-                        <!-- Pending Approvals -->
-                        <LinearLayout
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Leaves"
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"
+                                    android:textColor="#6666CC"/>
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+
+                        <!-- Absents -->
+                        <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_columnWeight="1"
-                            android:orientation="vertical"
-                            android:padding="8dp">
+                            android:layout_margin="4dp"
+                            app:cardBackgroundColor="#FFFFF0"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                            <TextView
-                                android:id="@+id/tvPendingApprovals"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="8"
-                                android:textColor="@color/gray_black"
-                                android:textSize="22sp"
-                                android:fontFamily="@font/poppins_bold" />
+                                android:orientation="vertical"
+                                android:padding="12dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Pending Approvals"
-                                android:textColor="@color/gray_black"
-                                android:textSize="14sp"
-                                android:fontFamily="@font/poppins" />
-                        </LinearLayout>
+                                <TextView
+                                    android:id="@+id/tvPendingApprovals"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/gray_black"
+                                    android:textSize="22sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
-                        <!-- Casual Leaves -->
-                        <LinearLayout
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#CCAA66"
+                                    android:text="Total Pending"
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+
+                        <!-- Late in -->
+                        <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_columnWeight="1"
-                            android:orientation="vertical"
-                            android:padding="8dp">
+                            android:layout_margin="4dp"
+                            app:cardBackgroundColor="#F0F7FF"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                            <TextView
-                                android:id="@+id/tvCasualLeaves"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="30"
-                                android:textColor="@color/gray_black"
-                                android:textSize="22sp"
-                                android:fontFamily="@font/poppins_bold" />
+                                android:orientation="vertical"
+                                android:padding="12dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Casual Leaves"
-                                android:textColor="@color/gray_black"
-                                android:textSize="14sp"
-                                android:fontFamily="@font/poppins" />
-                        </LinearLayout>
+                                <TextView
+                                    android:id="@+id/tvCasualLeaves"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/gray_black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
 
-                        <!-- Sick Leaves -->
-                        <LinearLayout
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#6683CC"
+                                    android:text="Casual Leaves"
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+
+                        <!-- Leaves -->
+                        <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_columnWeight="1"
-                            android:orientation="vertical"
-                            android:padding="8dp">
+                            android:layout_margin="4dp"
+                            app:cardBackgroundColor="#FFF4F0"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                            <TextView
-                                android:id="@+id/tvSickLeaves"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="15"
-                                android:textColor="@color/gray_black"
-                                android:textSize="22sp"
-                                android:fontFamily="@font/poppins_bold" />
+                                android:orientation="vertical"
+                                android:padding="12dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Sick Leaves"
-                                android:textColor="@color/gray_black"
-                                android:textSize="14sp"
-                                android:fontFamily="@font/poppins" />
-                        </LinearLayout>
+                                <TextView
+                                    android:id="@+id/tvSickLeaves"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/gray_black"
+                                    android:textSize="20sp"
+                                    android:fontFamily="@font/poppins_semibold"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#CC7C66"
+                                    android:text="Sick Leaves"
+                                    android:textSize="12sp"
+                                    android:fontFamily="@font/poppins"/>
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
                     </GridLayout>
 
                 </LinearLayout>
@@ -245,6 +285,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
+                        tools:listitem="@layout/item_leave"
                         android:nestedScrollingEnabled="false"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
                 </LinearLayout>
