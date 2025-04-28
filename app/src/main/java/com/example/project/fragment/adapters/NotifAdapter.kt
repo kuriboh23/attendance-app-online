@@ -25,7 +25,7 @@ class NotifAdapter(private val notifList: List<Notif>) :
         val notif = notifList[position]
 
         holder.binding.apply {
-            tvTitle.text = notif.title
+//            tvTitle.text = notif.title
             tvMessage.text = notif.message
             tvTime.text = formatTimeAgo(notif.timestamp)
 

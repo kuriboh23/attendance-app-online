@@ -4,30 +4,32 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="@drawable/rounded_outline_button"
+    android:backgroundTint="@color/gray_light"
+    android:layout_marginBottom="12dp"
     android:orientation="vertical">
 
-    <!-- Leave Approved Notification -->
-    <androidx.cardview.widget.CardView
+<!--    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
         app:cardBackgroundColor="@android:color/white"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="18dp"
         android:outlineAmbientShadowColor="@color/mainColor"
         android:outlineSpotShadowColor="@color/mainColor"
-        app:cardElevation="2dp">
+        app:cardElevation="2dp">-->
 
         <LinearLayout
+            android:padding="4dp"
+            android:paddingStart="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="14dp">
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/ivIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_gravity="center"
                 android:src="@drawable/check_done"/>
 
             <LinearLayout
@@ -36,7 +38,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="12dp"
                 android:orientation="vertical">
-
+<!--
                 <TextView
                     android:id="@+id/tvTitle"
                     android:layout_width="wrap_content"
@@ -44,7 +46,7 @@
                     android:text="Leave Approved"
                     android:fontFamily="@font/poppins_semibold"
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp" />-->
 
                 <TextView
                     android:id="@+id/tvMessage"
@@ -53,19 +55,18 @@
                     android:layout_marginTop="4dp"
                     android:text="Your leave request for Oct 28, 2023 has been approved."
                     android:fontFamily="@font/poppins"
-                    android:textColor="@color/grayLight"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:text="10 minutes ago"
                     android:fontFamily="@font/poppins"
-                    android:textColor="@color/grayLight"
+                    android:textColor="@color/gray_black"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+<!--    </androidx.cardview.widget.CardView>-->
     </LinearLayout>

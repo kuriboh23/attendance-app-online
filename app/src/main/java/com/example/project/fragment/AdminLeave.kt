@@ -221,7 +221,7 @@ class AdminLeave : Fragment() {
                     FirebaseDatabase.getInstance().getReference(leavePath).setValue("Rejected")
                     leaveList.leave.status = "Rejected" // Update locally
                     leaveAdapter.notifyDataSetChanged()
-                    sendNotification(leaveList.uid, "Leave Rejected", "Your leave request has been rejected.", "leave_reject")
+                    sendNotification(leaveList.uid, "Leave Rejected", "Your leave request has been rejected.", "leave_rejected")
                     dialog.dismiss()
                 }
             }
@@ -232,7 +232,7 @@ class AdminLeave : Fragment() {
                     FirebaseDatabase.getInstance().getReference(leavePath).setValue("Approved")
                     leaveList.leave.status = "Approved" // Update locally
                     leaveAdapter.notifyDataSetChanged()
-                    sendNotification(leaveList.uid, "Leave Approved", "Your leave request has been approved.", "leave_approve")
+                    sendNotification(leaveList.uid, "Leave Approved", "Your leave request has been approved.", "leave_approved")
                     dialog.dismiss()
                 }
             }

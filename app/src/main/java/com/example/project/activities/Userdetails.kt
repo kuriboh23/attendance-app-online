@@ -6,224 +6,139 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.project.R
 import com.example.project.adapter.MonthAdapter
+import com.example.project.data.Leave
+import com.example.project.data.TimeManager
+import com.example.project.data.User
 import com.example.project.databinding.ActivityUserDetailsBinding
 import com.example.project.fragment.list.MonthItem
 import com.example.project.fragment.list.YearHeader
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class Userdetails : AppCompatActivity() {
 
-    lateinit var binding: ActivityUserDetailsBinding
+    private lateinit var binding: ActivityUserDetailsBinding
+    private lateinit var auth: FirebaseAuth
+    private lateinit var userRef: DatabaseReference
 
-    val currentMonthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
-    val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
-
-    var presentCount = 0
-    var absentCount = 0
-    var lateCount = 0
+    private val currentMonthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
+    private val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        auth = FirebaseAuth.getInstance()
+        userRef = FirebaseDatabase.getInstance().getReference("users")
 
-        val userId = intent.getLongExtra("userId", -1)
+        val uid = intent.getStringExtra("userId") ?: return
 
-        /*    userViewModel.getUserById(userId).observe(this){user ->
-            val fullName = "${user.name} ${user.lastName}"
-            binding.tvUserFullName.text = fullName
-            binding.tvUserGmail.text = user.email
-        }*/
+        setupUserDetails(uid)
+        setupAttendanceSummary(uid, currentMonth, currentMonthName)
+        setupLeaveSummary(uid, currentMonth,currentMonthName)
 
-        binding.ivBack.setOnClickListener {
-            finish()
-        }
+//        binding.ivBack.setOnClickListener { finish() }
+        binding.ivFilterCheck.setOnClickListener { showFilterDialog(uid) }
+    }
 
-        /* checkViewModel.getChecksUserByMonth(currentMonth, userId).observe(this) { checks ->
-            presentCount = 0
-            absentCount = 0
-            lateCount = 0
-
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val today = Date()
-            val calendar = Calendar.getInstance()
-            calendar.time = dateFormat.parse("$currentMonth-01")!!
-
-            val groupedChecks = checks.groupBy { it.date }
-
-            while (!calendar.time.after(today)) {
-                val dateStr = dateFormat.format(calendar.time)
-                val checksForDay = groupedChecks[dateStr]
-                if (!checksForDay.isNullOrEmpty()) {
-
-                    for (check in checksForDay) {
-                        val (hourIn, _) = timeToIntPair(check.checkInTime)
-
-                        if ((hourIn in 9 until 13) || (hourIn in 15 until 19)) {
-                            lateCount++
-                        } else {
-                            presentCount++
-                        }
-                    }
-                } else {
-                    absentCount++
-                }
-
-                calendar.add(Calendar.DAY_OF_MONTH, 1)
-            }
-
-            binding.tvPresentCount.text = presentCount.toString()
-            binding.tvAbsentCount.text = absentCount.toString()
-            binding.tvLateCount.text = lateCount.toString()
-            binding.tvSummaryTitle.text = "Summary of $currentMonthName"
-        }*/
-
-
-        /* leaveViewModel.getLeavesByMonth(currentMonth, userId).observe(this) { leaves ->
-
-            binding.tvSummaryleave.text = "Summary of $currentMonthName"
-                if (leaves != null) {
-                    val totalLeaves = leaves.size
-                    val pendingApprovals = leaves.filter { it.status == "Pending" }.size
-                    val arrpovedLeaves = leaves.filter { it.status == "Approved" }.size
-                    val rejectedLeaves = leaves.filter { it.status == "Rejected" }.size
-
-                    binding.tvPendingLeaves.text = pendingApprovals.toString()
-                    binding.tvApprovedLeaves.text = arrpovedLeaves.toString()
-                    binding.tvRejectedLeaves.text = rejectedLeaves.toString()
-                    binding.tvLeaveTitle.text = "$totalLeaves Leaves"
+    private fun setupUserDetails(uid: String) {
+        userRef.child(uid).get().addOnSuccessListener { snapshot ->
+            snapshot.getValue(User::class.java)?.let { user ->
+                binding.tvUserFullName.text = "${user.name} ${user.lastName}"
+                binding.tvUserGmail.text = user.email
             }
         }
+    }
 
-        binding.ivFilterCheck.setOnClickListener {
-            showFilterDialog(userId)
-        }
-
-    }*/
-
-        // Filter button to select a different month
-        fun showFilterDialog(userId: Long) {
-            val dialog = BottomSheetDialog(this)
-            val view = layoutInflater.inflate(R.layout.bottom_sheet_date, null)
-            dialog.setCanceledOnTouchOutside(true)
-            dialog.setContentView(view)
-
-            // Set up RecyclerView for month selection
-            val recyclerView: RecyclerView = view.findViewById(R.id.month_list)
-            recyclerView.layoutManager = LinearLayoutManager(this)
-
-            // Prepare data for month selection
-            val items = mutableListOf<YearHeader>()
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-
-            for (year in currentYear - 2..currentYear) {
-                val monthsList = listOf(
-                    "January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"
-                ).mapIndexed { index, name ->
-                    MonthItem(
-                        year = year,
-                        monthNumber = index + 1,
-                        monthName = name
-                    )
-                }
-                items.add(YearHeader(year = year, months = monthsList))
+    private fun setupAttendanceSummary(uid: String, monthYear: String, monthName: String) {
+        userRef.child(uid).child("timeManager").get().addOnSuccessListener { snapshot ->
+            val timeManagers = snapshot.children.mapNotNull {
+                it.getValue(TimeManager::class.java)
+            }.filter {
+                it.date?.startsWith(monthYear) == true
             }
 
-            // Set up MonthAdapter for selecting months
-            val monthAdapter = MonthAdapter(items) { selectedMonth ->
-                val monthYearStr =
-                    "${selectedMonth.year}-${selectedMonth.monthNumber.toString().padStart(2, '0')}"
+                val present = timeManagers.count { it.late == false && it.absent == false }
+                val late = timeManagers.count { it.late == true }
+                val absent = timeManagers.count { it.absent == true }
 
-                binding.tvSummaryTitle.text = "Summary of ${selectedMonth.monthName}"
-                binding.tvSummaryleave.text = "Summary of ${selectedMonth.monthName}"
+                binding.tvPresentCount.text = present.toString()
+                binding.tvLateCount.text = late.toString()
+                binding.tvAbsentCount.text = absent.toString()
 
-                /* leaveViewModel.getLeavesByMonth(monthYearStr, userId).observe(this) { leaves ->
-                if (leaves != null) {
-                    val totalLeaves = leaves.size
-                    val pendingApprovals = leaves.filter { it.status == "Pending" }.size
-                    val arrpovedLeaves = leaves.filter { it.status == "Approved" }.size
-                    val rejectedLeaves = leaves.filter { it.status == "Rejected" }.size
-
-                    binding.tvPendingLeaves.text = pendingApprovals.toString()
-                    binding.tvApprovedLeaves.text = arrpovedLeaves.toString()
-                    binding.tvRejectedLeaves.text = rejectedLeaves.toString()
-                    binding.tvLeaveTitle.text = "$totalLeaves Leaves"
-                }
-            }*/
-
-                /*checkViewModel.getChecksUserByMonth(monthYearStr, userId).observe(this) { checks ->
-                var presentCount = 0
-                var absentCount = 0
-                var lateCount = 0
-
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val calendar = Calendar.getInstance()
-                val selectedMonthStart = dateFormat.parse("$monthYearStr-01")!!
-                calendar.time = selectedMonthStart
-
-                val selectedMonth = calendar.get(Calendar.MONTH)
-                val selectedYear = calendar.get(Calendar.YEAR)
-
-                val today = Calendar.getInstance()
-
-                val groupedChecks = checks.groupBy { it.date }
-
-                while (
-                    calendar.get(Calendar.MONTH) == selectedMonth &&
-                    calendar.get(Calendar.YEAR) == selectedYear &&
-                    !calendar.after(today)
-                ) {
-                    val dateStr = dateFormat.format(calendar.time)
-                    val checksForDay = groupedChecks[dateStr]
-
-                    if (checksForDay != null && checksForDay.isNotEmpty()) {
-                        for (check in checksForDay) {
-                            val (hourIn, _) = timeToIntPair(check.checkInTime)
-                            if ((hourIn in 9 until 13) || (hourIn in 15 until 19)) {
-                                lateCount++
-                            } else {
-                                presentCount++
-                            }
-                        }
-                    } else {
-                        absentCount++
-                    }
-
-                    calendar.add(Calendar.DAY_OF_MONTH, 1)
-                }
-
-                binding.tvPresentCount.text = presentCount.toString()
-                binding.tvAbsentCount.text = absentCount.toString()
-                binding.tvLateCount.text = lateCount.toString()
-            }*/
-
-                dialog.dismiss()
-            }
-            recyclerView.adapter = monthAdapter
-            dialog.show()
+            // Always set title outside to avoid missing it
+            binding.tvSummaryTitle.text = "Summary of $monthName"
+            binding.tvSummaryleave.text = "Summary of $monthName"
         }
+    }
 
 
-        fun timeToIntPair(timeString: String): Pair<Int, Int> {
-            val parts = timeString.split(" ")
-            val timeParts = parts[0].split(":")
-            var hours = timeParts[0].toInt()
-            val minutes = timeParts[1].toInt()
-            val isPM = parts[1].equals("PM", ignoreCase = true)
-
-            if (isPM && hours != 12) {
-                hours += 12
-            } else if (!isPM && hours == 12) {
-                hours = 0
+    private fun setupLeaveSummary(uid: String, monthYear: String,monthName: String) {
+        userRef.child(uid).child("leaves").get().addOnSuccessListener { snapshot ->
+            val leavesList = snapshot.children.mapNotNull {
+                it.getValue(Leave::class.java)?.takeIf { leave -> leave.date.startsWith(monthYear) }
             }
 
-            return Pair(hours, minutes)
+                val totalLeaves = leavesList.size
+                val pending = leavesList.count { it.status == "Pending" }
+                val approved = leavesList.count { it.status == "Approved" }
+                val rejected = leavesList.count { it.status == "Rejected" }
+
+                binding.tvPendingLeaves.text = pending.toString()
+                binding.tvApprovedLeaves.text = approved.toString()
+                binding.tvRejectedLeaves.text = rejected.toString()
+                binding.tvLeaveTitle.text = "$totalLeaves Leaves"
+                binding.tvSummaryleave.text = "Summary of $monthName"
         }
+    }
+
+    private fun showFilterDialog(uid: String) {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_date, null)
+        dialog.setContentView(view)
+        dialog.setCanceledOnTouchOutside(true)
+
+        val recyclerView: RecyclerView = view.findViewById(R.id.month_list)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val items = generateYearMonthItems()
+
+        val monthAdapter = MonthAdapter(items) { selectedMonth ->
+            val selectedMonthYear = "${selectedMonth.year}-${selectedMonth.monthNumber.toString().padStart(2, '0')}"
+            val selectedMonthName = selectedMonth.monthName
+
+            binding.tvSummaryTitle.text = "Summary of $selectedMonthName"
+            binding.tvSummaryleave.text = "Summary of $selectedMonthName"
+
+            setupAttendanceSummary(uid, selectedMonthYear, selectedMonthName)
+            setupLeaveSummary(uid, selectedMonthYear,selectedMonthName)
+
+            dialog.dismiss()
+        }
+
+        recyclerView.adapter = monthAdapter
+        dialog.show()
+    }
+
+    private fun generateYearMonthItems(): List<YearHeader> {
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val items = mutableListOf<YearHeader>()
+
+        for (year in currentYear - 2..currentYear) {
+            val months = listOf(
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ).mapIndexed { index, name ->
+                MonthItem(year, index + 1, name)
+            }
+            items.add(YearHeader(year, months))
+        }
+
+        return items
     }
 }
