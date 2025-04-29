@@ -52,6 +52,8 @@ class Salary : Fragment() {
         val monthYear = monthYearFormat.format(now)
         val monthNameYear = monthNameYearFormat.format(now)
 
+        binding.tvMonthYear.text = monthNameYear
+
         // Set up RecyclerView for salary details
         binding.RecView.layoutManager = LinearLayoutManager(requireContext())
         salaryAdapter = SalaryAdapter(emptyList())
@@ -78,7 +80,6 @@ class Salary : Fragment() {
 
                         requireContext().showCustomToast("No Data Found", R.layout.error_toast)
                     }
-                    binding.tvMonthYear.text = monthNameYear
                 }
             }
 

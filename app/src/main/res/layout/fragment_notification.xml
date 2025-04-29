@@ -45,7 +45,6 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-    <!-- Floating Action Button -->
 
     <!-- Loading Overlay -->
     <FrameLayout

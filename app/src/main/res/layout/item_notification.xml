@@ -5,33 +5,27 @@
     android:layout_height="wrap_content"
     android:fillViewport="true"
     android:layout_marginBottom="12dp"
-    android:background="@drawable/rounded_outline_button"
-    android:backgroundTint="@color/whiteLight"
+    android:background="@drawable/notify_outline"
     android:orientation="vertical">
 
 <!--    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@android:color/white"
-        app:cardCornerRadius="18dp"
-        android:outlineAmbientShadowColor="@color/mainColor"
-        android:outlineSpotShadowColor="@color/mainColor"
-        app:cardElevation="2dp">-->
+        app:cardBackgroundColor="@color/whiteLight"
+        app:cardCornerRadius="24dp">-->
 
         <LinearLayout
             android:padding="4dp"
             android:paddingStart="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:background="@drawable/rounded_outline_button"
-            android:backgroundTint="@color/whiteLight"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/ivIcon"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
                 android:layout_gravity="center"
                 android:src="@drawable/check_done"/>
 
@@ -68,8 +62,10 @@
                     android:text="10 minutes ago"
                     android:fontFamily="@font/poppins"
                     android:textColor="@color/gray_black"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
-<!--    </androidx.cardview.widget.CardView>-->
+<!--
+    </androidx.cardview.widget.CardView>
+-->
     </LinearLayout>

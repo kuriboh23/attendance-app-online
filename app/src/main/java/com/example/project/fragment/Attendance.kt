@@ -62,6 +62,8 @@ class Attendance : Fragment() {
             filterByMonth(dateFormatter, uid)
         }
 
+        binding.tvMonthYear.text ="${ SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date()) }"
+
         return binding.root
     }
 

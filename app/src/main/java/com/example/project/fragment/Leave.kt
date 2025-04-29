@@ -25,6 +25,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -36,6 +37,8 @@ class Leave : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
+
+    private val now = System.currentTimeMillis()
 
     @SuppressLint("NotifyDataSetChanged")
     private val applyLeaveLauncher = registerForActivityResult(
@@ -82,6 +85,11 @@ class Leave : Fragment() {
         binding.tvLeaveFilter.setOnClickListener {
             showLeaveFilterBottomSheet(uid)
         }
+        val monthNameYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+
+        val monthNameYear = monthNameYearFormat.format(now)
+
+        binding.summaryText.text = "Summary of, $monthNameYear"
 
         return binding.root
     }
