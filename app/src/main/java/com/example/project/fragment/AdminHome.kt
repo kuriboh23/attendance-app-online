@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.transition.Visibility
 import com.example.project.R
 import com.example.project.UserPrefs
 import com.example.project.activities.MainActivity
@@ -45,6 +46,7 @@ class AdminHome : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAdminHomeBinding.inflate(inflater, container, false)
+        binding.loadingOverlay.visibility = View.VISIBLE
 
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
@@ -103,7 +105,7 @@ class AdminHome : Fragment() {
                                 val checkInTime = check.child("checkInTime").getValue(String::class.java)
                                 if (checkInTime != null) {
                                     if (latestCheckInTime == null || timeToIntPair(checkInTime).first > timeToIntPair(
-                                            latestCheckInTime
+                                            latestCheckInTime!!
                                         ).first) {
                                         latestCheckInTime = checkInTime
                                     }
@@ -113,13 +115,13 @@ class AdminHome : Fragment() {
 
                         // Determine the status based on the latest check-in time
                         val status = if (latestCheckInTime != null) {
-                            val (hour, _) = timeToIntPair(latestCheckInTime)
+                            val (hour, _) = timeToIntPair(latestCheckInTime!!)
                             when {
-                                hour in 8..8 -> "Present"         // 08:00 - 08:59 => Present
-                                hour in 9..11 -> "Late"            // 09:00 - 11:59 => Late
-                                hour in 12..13 -> "Absent"             // 12:00 - 13:59 => Ignore
-                                hour in 14..14 -> "Present"            // 14:00 - 14:59 => Present
-                                hour >= 15 -> "Late"               // 15:00+ => Late
+                                hour in 8..8 -> "Present"
+                                hour in 9..11 -> "Late"
+                                hour in 12..13 -> "Rest"
+                                hour in 14..14 -> "Present"
+                                hour >= 15 -> "Late"
                                 else -> "null"
                             }
                         } else {
@@ -164,6 +166,8 @@ class AdminHome : Fragment() {
         binding.tvPresentCount.text = userWithStatusList.count { it.status == "Present" }.toString()
         binding.tvAbsentCount.text = userWithStatusList.count { it.status == "Absent" }.toString()
         binding.tvLateCount.text = userWithStatusList.count { it.status == "Late" }.toString()
+
+        binding.loadingOverlay.visibility = View.GONE
     }
 
     @SuppressLint("MissingInflatedId", "InflateParams")

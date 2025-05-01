@@ -7,27 +7,33 @@
     android:background="@color/white"
     android:padding="24dp">
 
-    <ImageView
-        android:id="@+id/tvback_arrow"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+    <LinearLayout
+        android:id="@+id/arrowLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/back_selector"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/left_arrow" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:srcCompat="@drawable/left" />
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/tvleave_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:fontFamily="@font/poppins_bold"
         android:text="Apply a Leave"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/tvback_arrow"
-        app:layout_constraintStart_toEndOf="@+id/tvback_arrow"
-        app:layout_constraintTop_toTopOf="@+id/tvback_arrow" />
-
+        android:textColor="@color/mainColor"
+        android:textSize="24sp"
+        android:layout_marginStart="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/arrowLeft"
+        app:layout_constraintStart_toEndOf="@+id/arrowLeft"
+        app:layout_constraintTop_toTopOf="@+id/arrowLeft" />
 
     <TextView
         android:id="@+id/txleave_type"
@@ -63,6 +69,7 @@
             android:backgroundTint="@color/button_toggle_background"
             android:paddingVertical="12dp"
             android:text="Casual"
+            android:fontFamily="@font/poppins_semibold"
             android:textAllCaps="false"
             android:textColor="@color/button_toggle_text_color"
             app:cornerRadius="10dp"
@@ -79,6 +86,7 @@
             android:backgroundTint="@color/button_toggle_background"
             android:paddingVertical="12dp"
             android:text="Sick"
+            android:fontFamily="@font/poppins_semibold"
             android:textAllCaps="false"
             android:textColor="@color/button_toggle_text_color"
             app:cornerRadius="10dp"
@@ -105,6 +113,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:textColorHint="@color/gray_black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txleave_startDate">
@@ -116,9 +125,10 @@
             android:background="@drawable/editext_background"
             android:clickable="true"
             android:focusable="false"
+            android:fontFamily="@font/poppins"
             android:hint="Select start date"
             android:inputType="none"
-            android:textColor="@color/black" />
+            android:textColor="@color/gray_black" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -138,6 +148,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:textColorHint="@color/gray_black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txleave_endDate">
@@ -150,8 +161,9 @@
             android:clickable="true"
             android:focusable="false"
             android:hint="Select end date"
+            android:fontFamily="@font/poppins"
             android:inputType="none"
-            android:textColor="@color/black" />
+            android:textColor="@color/gray_black" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -173,6 +185,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:hintTextColor="@color/gray_black"
+        android:hint="Write a reason"
         android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -180,19 +193,17 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tv_note"
-
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginBottom="16dp"
+
             android:background="@drawable/editext_background"
             android:gravity="top"
-            android:hint="Write a reason"
+            android:fontFamily="@font/poppins"
             android:inputType="textMultiLine"
             android:padding="12dp"
-
-            android:textColor="@color/gray_black"
-            android:textColorHint="@color/gray_black"
-            android:textSize="16sp" />
+            app:hintTextColor="@color/gray_black"
+            android:textColor="@color/gray_black"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Attachment Section -->

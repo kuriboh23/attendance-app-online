@@ -67,6 +67,7 @@ class AdminLeave : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentAdminLeaveBinding.inflate(inflater, container, false)
+        binding.loadingOverlay.visibility = View.VISIBLE
 
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
@@ -108,6 +109,9 @@ class AdminLeave : Fragment() {
                         binding.tvCasualLeaves.text = casualLeaves.toString()
                         val sickLeaves = allLeaves.filter { it.leave.type == "Sick" }.size
                         binding.tvSickLeaves.text = sickLeaves.toString()
+
+                        binding.loadingOverlay.visibility = View.GONE
+
                     }
                 }
             }

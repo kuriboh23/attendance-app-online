@@ -5,37 +5,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="12dp"
     android:orientation="vertical">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginHorizontal="18dp"
-        android:background="@color/white"
-        tools:layout_editor_absoluteX="18dp">
+    <TextView
+        android:id="@+id/signupTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/raleway_black"
+        android:text="Login Account"
+        android:textColor="@color/mainColor"
+        android:textSize="32sp"
 
-
-        <ImageView
-            android:id="@+id/arrowLeft"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/arrow_left" />
-
-        <TextView
-            android:id="@+id/signupTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:fontFamily="@font/raleway_black"
-            android:text="Login Account"
-            android:textColor="@color/mainColor"
-            android:textSize="32sp"
-
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/arrowLeft" />
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/signup_msg"
@@ -45,6 +30,7 @@
             android:text="Welcome Back!"
             android:textColor="@color/black"
             android:textSize="12sp"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="@id/signupTitle"
             app:layout_constraintTop_toBottomOf="@id/signupTitle" />
 
@@ -57,8 +43,8 @@
             android:text="Mobile Number?"
             android:textColor="@color/mainColor"
             android:textStyle="bold"
-            android:layout_marginTop="12dp"
-            android:visibility="invisible"
+            android:layout_marginTop="34dp"
+            android:visibility="visible"
 
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signup_msg" />
@@ -145,82 +131,38 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/privacyChekbox" />
 
-        <TextView
-            android:id="@+id/grayRuleText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="36dp"
-            android:text="or sign in with"
-            android:textColor="@color/black"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.501"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/signIn_btn" />
 
+    <!-- Loading Overlay -->
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- res/layout/button_google.xml -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_google_button"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/grayRuleText">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/google_logo" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:fontFamily="@font/poppins"
-                android:text="Continue With Google"
-                android:textColor="#000000"
-                android:textSize="16sp" />
-        </LinearLayout>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/mainColor"
+            style="?android:attr/progressBarStyleLarge" />
 
         <TextView
-            android:id="@+id/signUpText"
+            android:id="@+id/loadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="80dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="@string/loading"
+            android:textColor="@color/gray_black"
+            android:textSize="16sp" />
+    </FrameLayout>
 
-            android:layout_marginBottom="32dp"
-            android:fontFamily="@font/poppins"
-            android:paddingEnd="8dp"
-            android:text="Don't have an account?"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/signUpLink"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
-
-            android:text="Sign Up"
-            android:textColor="@color/mainColor"
-            android:textStyle="bold"
-
-            app:layout_constraintBottom_toBottomOf="@+id/signUpText"
-            app:layout_constraintStart_toEndOf="@+id/signUpText"
-            app:layout_constraintTop_toTopOf="@+id/signUpText" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

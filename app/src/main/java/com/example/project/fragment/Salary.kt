@@ -41,6 +41,7 @@ class Salary : Fragment() {
     ): View {
         // Inflate the layout for this fragment
         binding = FragmentSalaryBinding.inflate(inflater, container, false)
+        binding.loadingOverlay.visibility = View.VISIBLE
 
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")

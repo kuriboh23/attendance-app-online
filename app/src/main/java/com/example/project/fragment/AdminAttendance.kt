@@ -83,6 +83,7 @@ class AdminAttendance : Fragment() {
         datePicker.show(childFragmentManager, "WEEK_PICKER")
 
         datePicker.addOnPositiveButtonClickListener { selection ->
+            binding.loadingOverlay.visibility = View.VISIBLE
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = selection
 
@@ -118,10 +119,13 @@ class AdminAttendance : Fragment() {
                             binding.weeksText.isVisible = true
                             binding.weeksText.text = "Week $weekOfMonth"
 
+                            binding.loadingOverlay.visibility = View.GONE
+
                         }else{
                             checkAdapter.updateChecks(emptyList())
                             binding.weeksText.isVisible = false
                             requireContext().showCustomToast("No Data Found", R.layout.error_toast)
+                            binding.loadingOverlay.visibility = View.GONE
                         }
                     }
                 }
@@ -139,8 +143,7 @@ class AdminAttendance : Fragment() {
         val searchView = view.findViewById<SearchView>(R.id.search_bar)
         val rvTeamAttendance = view.findViewById<RecyclerView>(R.id.rvTeamAttendance)
 
-        // Customize search view appearance
-        val searchAutoComplete = searchView.findViewById<SearchView.SearchAutoComplete>(
+        searchView.findViewById<SearchView.SearchAutoComplete>(
             androidx.appcompat.R.id.search_src_text
         ).apply {
             setTextColor(Color.BLACK)
@@ -156,6 +159,8 @@ class AdminAttendance : Fragment() {
         teamUserAdapter = TeamUserAdapter(userWithUidList,"Checks") { user ->
             dialog.dismiss()
             val userUid = user.uid
+
+            binding.loadingOverlay.visibility = View.VISIBLE
 
             binding.teamText.text = "${user.user.lastName} Attendance"
 
@@ -184,6 +189,8 @@ class AdminAttendance : Fragment() {
                             binding.summaryText.text = "Summary of $monthName"
                             binding.weeksText.isVisible = true
                             binding.weeksText.text = "Week $weekOfMonth"
+
+                            binding.loadingOverlay.visibility = View.GONE
                         }
                     }
                 }
@@ -194,6 +201,7 @@ class AdminAttendance : Fragment() {
 
         rvTeamAttendance.layoutManager = LinearLayoutManager(requireContext())
         rvTeamAttendance.adapter = teamUserAdapter
+
 
         fetchUsers(searchView)
 

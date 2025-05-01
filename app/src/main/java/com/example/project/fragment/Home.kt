@@ -44,6 +44,7 @@ class Home : Fragment() {
     private val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
     private val dayNameFormat = SimpleDateFormat("EEEE", Locale.getDefault())
     private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
 
     private val now = System.currentTimeMillis()
     private val dayName = dayNameFormat.format(Date())
@@ -75,6 +76,8 @@ class Home : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+        binding.loadingOverlay.visibility = View.VISIBLE
+
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
 
@@ -103,6 +106,7 @@ class Home : Fragment() {
                 .addOnSuccessListener {
                     val lastName = it.value.toString()
                     binding.tvGreeting.text = "Hey, $lastName"
+                    binding.loadingOverlay.visibility = View.GONE
                 }
         }
 
@@ -268,16 +272,20 @@ class Home : Fragment() {
 
     private fun updateAttendance(uid: String) {
         userRef.child(uid).child("timeManager").get()
-            .addOnSuccessListener { dataSnapshot ->
-                val timeManagerList = dataSnapshot.children.mapNotNull { snapshot ->
-                    snapshot.getValue(TimeManager::class.java)
-                }
-                if (timeManagerList.isNotEmpty()) {
-                    val absentCount = timeManagerList.count { it.absent == true }
-                    val lateCount = timeManagerList.count { it.late == true }
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val timeManagerList = snapshot.children.mapNotNull { dataSnapshot ->
+                        val timeMG = dataSnapshot.getValue(TimeManager::class.java)
+                        if (timeMG?.date?.startsWith(currentMonth) == true) timeMG else null
+                    }
 
-                    binding.tvAbsent.text = absentCount.toString()
-                    binding.tvLate.text = lateCount.toString()
+                    if (timeManagerList.isNotEmpty()) {
+                        val absentCount = timeManagerList.count { it.absent == true }
+                        val lateCount = timeManagerList.count { it.late == true }
+
+                        binding.tvAbsent.text = absentCount.toString()
+                        binding.tvLate.text = lateCount.toString()
+                    }
                 }
             }
     }

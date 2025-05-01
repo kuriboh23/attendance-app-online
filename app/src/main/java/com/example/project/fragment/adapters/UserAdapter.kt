@@ -39,6 +39,7 @@ class UserAdapter(
             "present" -> ContextCompat.getColor(context, R.color.mainColor)
             "absent" -> ContextCompat.getColor(context, R.color.status_rejected)
             "late" -> ContextCompat.getColor(context, R.color.status_pending)
+            "rest" -> ContextCompat.getColor(context, R.color.status_approved)
             else -> ContextCompat.getColor(context, android.R.color.black)
         }
         holder.userStatus.setTextColor(statusColor)

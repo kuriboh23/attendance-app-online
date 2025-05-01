@@ -33,7 +33,7 @@ class Attendance : Fragment() {
     private lateinit var userRef: DatabaseReference
 
     private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
+    private val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,7 +56,7 @@ class Attendance : Fragment() {
         binding.RecView.layoutManager = LinearLayoutManager(requireContext())
         binding.RecView.adapter = checkAdapter
 
-        updateCheckCounts(uid)
+        updateCheckCounts(uid,false,currentMonth)
 
         binding.filterMouth.setOnClickListener {
             filterByMonth(dateFormatter, uid)
@@ -71,19 +71,22 @@ class Attendance : Fragment() {
     @SuppressLint("SetTextI18n")
     fun updateCheckCounts(uid: String,
       isFiltered: Boolean = false,
+      monthYear: String = "",
       startOfWeek: String = "",
       endOfWeek: String = "",
-      monthYear: String = "",
       monthName: String = "",
       weekOfMonth: Int = 0,
       monthNameYear: String = "") {
 
         if (!isFiltered) {
+            binding.loadingOverlay.visibility = View.VISIBLE
+
             val todayDate = dateFormatter.format(Date())
 
             userRef.child(uid).child("checks").get()
                 .addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
+
                         val checkList = snapshot.children.mapNotNull { dataSnapshot ->
                             val check = dataSnapshot.getValue(Check::class.java)
                             if (check?.date == todayDate) check else null
@@ -118,6 +121,7 @@ class Attendance : Fragment() {
                             }
 
                             binding.tvLeaveCount.text = earlyLeaves.toString()
+                            binding.loadingOverlay.visibility = View.GONE
 
                         } else {
                             requireContext().showCustomToast(
@@ -145,7 +149,7 @@ class Attendance : Fragment() {
                     if (snapshot.exists()) {
                         val timeManagerList = snapshot.children.mapNotNull { dataSnapshot ->
                             val timeMG = dataSnapshot.getValue(TimeManager::class.java)
-                            if (timeMG?.date == todayDate) timeMG else null
+                            if (timeMG?.date?.startsWith(monthYear) == true) timeMG else null
                         }
                         if (timeManagerList.isNotEmpty()) {
                             val absentCount = timeManagerList.count { it.absent == true }
@@ -154,15 +158,13 @@ class Attendance : Fragment() {
                             binding.tvLateCount.text = lateCount.toString()
                             val extraTimeCount = timeManagerList.sumBy { it.extraTime!! }
                             binding.tvExtraTime.text = extraTimeCount.toString()
-                        } else {
-                            binding.tvAbsentCount.text = "0"
-                            binding.tvLateCount.text = "0"
-                            binding.tvExtraTime.text = "0"
                         }
                     }
                 }
         }
         else{
+            binding.loadingOverlay.visibility = View.VISIBLE
+
             userRef.child(uid).child("checks").get()
                 .addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
@@ -193,6 +195,8 @@ class Attendance : Fragment() {
                                 } ?: false
                             }
                             binding.tvLeaveCount.text = earlyLeaves.toString()
+                            binding.loadingOverlay.visibility = View.GONE
+
                         }else{
                             checkAdapter.setData(emptyList())
                             requireContext().showCustomToast("No Data Found", R.layout.error_toast)
@@ -254,7 +258,7 @@ class Attendance : Fragment() {
             val monthNameYear = monthNameYearFormat.format(startWeek)
             val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(startWeek)
 
-            updateCheckCounts(uid,true,startOfWeek,endOfWeek,monthYear,monthName,weekOfMonth,monthNameYear)
+            updateCheckCounts(uid,true,monthYear,startOfWeek,endOfWeek,monthName,weekOfMonth,monthNameYear)
         }
     }
 }

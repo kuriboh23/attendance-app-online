@@ -3,6 +3,7 @@ package com.example.project.activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.project.R
 import com.example.project.UserPrefs
@@ -24,20 +25,18 @@ class Login : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        binding.arrowLeft.setOnClickListener {
+/*        binding.arrowLeft.setOnClickListener {
             finish()
-        }
-
-        binding.signUpLink.setOnClickListener {
-            val intent = Intent(this, SignUp::class.java)
-            startActivity(intent)
-        }
+        }*/
 
         binding.signInBtn.setOnClickListener {
+            binding.loadingOverlay.visibility = View.VISIBLE
+
             val email = binding.emailInput.text.toString().trim()
             val password = binding.txPassword.text.toString()
 
             if (!isValidEmail(email)) {
+                binding.loadingOverlay.visibility = View.GONE
                 this.showCustomToast("Invalid Email", R.layout.error_toast)
                 binding.emailInput.text?.clear()
                 binding.emailInput.requestFocus()
@@ -45,6 +44,7 @@ class Login : AppCompatActivity() {
             }
 
             if (password.isEmpty()) {
+                binding.loadingOverlay.visibility = View.GONE
                 this.showCustomToast("Incorrect password", R.layout.error_toast)
                 return@setOnClickListener
             }
@@ -62,9 +62,11 @@ class Login : AppCompatActivity() {
                     if (uid != null) {
                         fetchUserRoleAndNavigate(uid)
                     } else {
+                        binding.loadingOverlay.visibility = View.GONE
                         this.showCustomToast("Login failed: User ID not found", R.layout.error_toast)
                     }
                 } else {
+                    binding.loadingOverlay.visibility = View.GONE
                     val errorMsg = task.exception?.localizedMessage ?: "Login failed"
                     this.showCustomToast("Login failed: $errorMsg", R.layout.error_toast)
                 }
@@ -85,6 +87,8 @@ class Login : AppCompatActivity() {
 
             val targetActivity = if (role == "user") HomeActivity::class.java else AdminHomeActivity::class.java
             val intent = Intent(this, targetActivity)
+
+            binding.loadingOverlay.visibility = View.GONE
             this.showCustomToast("Login Successful", R.layout.success_toast)
             startActivity(intent)
             finish()

@@ -42,7 +42,7 @@ class Userdetails : AppCompatActivity() {
         setupAttendanceSummary(uid, currentMonth, currentMonthName)
         setupLeaveSummary(uid, currentMonth,currentMonthName)
 
-//        binding.ivBack.setOnClickListener { finish() }
+        binding.arrowLeft.setOnClickListener { finish() }
         binding.ivFilterCheck.setOnClickListener { showFilterDialog(uid) }
     }
 

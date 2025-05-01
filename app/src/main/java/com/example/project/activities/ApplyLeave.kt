@@ -72,13 +72,13 @@ class ApplyLeave : AppCompatActivity() {
         binding.startDate.setOnClickListener { showDatePicker(true) }
         binding.endDate.setOnClickListener { showDatePicker(false) }
 
-        binding.tvbackArrow.setOnClickListener { finish() }
+        binding.arrowLeft.setOnClickListener { finish() }
 
         binding.leaveTypeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 type = when (checkedId) {
-                    com.example.project.R.id.btn_casual -> "Casual"
-                    com.example.project.R.id.btn_sick -> "Sick"
+                    R.id.btn_casual -> "Casual"
+                    R.id.btn_sick -> "Sick"
                     else -> ""
                 }
             }

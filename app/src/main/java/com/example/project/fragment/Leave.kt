@@ -38,8 +38,6 @@ class Leave : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
 
-    private val now = System.currentTimeMillis()
-
     @SuppressLint("NotifyDataSetChanged")
     private val applyLeaveLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
@@ -63,6 +61,7 @@ class Leave : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentLeaveBinding.inflate(inflater, container, false)
+        binding.loadingOverlay.visibility = View.VISIBLE
 
         auth = FirebaseAuth.getInstance()
         userRef = FirebaseDatabase.getInstance().getReference("users")
@@ -85,11 +84,6 @@ class Leave : Fragment() {
         binding.tvLeaveFilter.setOnClickListener {
             showLeaveFilterBottomSheet(uid)
         }
-        val monthNameYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-
-        val monthNameYear = monthNameYearFormat.format(now)
-
-        binding.summaryText.text = "Summary of, $monthNameYear"
 
         return binding.root
     }
@@ -112,6 +106,7 @@ class Leave : Fragment() {
         binding.tvCasualLeaves.text = leaves.count { it.type == "Casual" }.toString()
         binding.tvSickLeaves.text = leaves.count { it.type == "Sick" }.toString()
         binding.tvPendingApprovals.text = leaves.count { it.status == "Pending" }.toString()
+        binding.loadingOverlay.visibility = View.GONE
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
