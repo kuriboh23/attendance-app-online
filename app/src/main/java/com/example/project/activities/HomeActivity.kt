@@ -9,6 +9,9 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.project.R
 import com.example.project.UserPrefs
+import com.example.project.data.ConnectivityObserver
+import com.example.project.databinding.ActivityHomeBinding
+import com.example.project.utils.observeConnectivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.color.DynamicColors
 
@@ -16,11 +19,28 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var bottomNav: BottomNavigationView
+    private lateinit var binding: ActivityHomeBinding
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.networkOverlay.visibility = android.view.View.VISIBLE
+
+        observeConnectivity { status ->
+            when (status) {
+                ConnectivityObserver.Status.Available -> {
+                    binding.networkOverlay.visibility = android.view.View.GONE
+                }
+                ConnectivityObserver.Status.Unavailable,
+                ConnectivityObserver.Status.Losing,
+                ConnectivityObserver.Status.Lost -> {
+                    binding.networkOverlay.visibility = android.view.View.VISIBLE
+                }
+            }
+        }
 
         DynamicColors.applyToActivitiesIfAvailable(application)
 

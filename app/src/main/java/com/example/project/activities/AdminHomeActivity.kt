@@ -1,14 +1,15 @@
 package com.example.project.activities
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.project.R
-import com.example.project.UserPrefs
+import com.example.project.data.ConnectivityObserver
+import com.example.project.databinding.ActivityAdminHomeBinding
+import com.example.project.utils.observeConnectivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.color.DynamicColors
 
@@ -16,11 +17,28 @@ class AdminHomeActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var bottomNav: BottomNavigationView
+    private lateinit var binding: ActivityAdminHomeBinding
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_admin_home)
+        binding = ActivityAdminHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.networkOverlay.visibility = android.view.View.VISIBLE
+
+        observeConnectivity { status ->
+            when (status) {
+                ConnectivityObserver.Status.Available -> {
+                    binding.networkOverlay.visibility = android.view.View.GONE
+                }
+                ConnectivityObserver.Status.Unavailable,
+                ConnectivityObserver.Status.Losing,
+                ConnectivityObserver.Status.Lost -> {
+                    binding.networkOverlay.visibility = android.view.View.VISIBLE
+                }
+            }
+        }
 
         DynamicColors.applyToActivitiesIfAvailable(application)
 
