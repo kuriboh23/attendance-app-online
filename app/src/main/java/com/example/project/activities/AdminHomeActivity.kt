@@ -1,12 +1,14 @@
 package com.example.project.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.project.R
+import com.example.project.UserPrefs
 import com.example.project.data.ConnectivityObserver
 import com.example.project.databinding.ActivityAdminHomeBinding
 import com.example.project.utils.observeConnectivity
@@ -53,12 +55,26 @@ class AdminHomeActivity : AppCompatActivity() {
         bottomNav.setupWithNavController(navController)
         bottomNav.isItemActiveIndicatorEnabled = false
 
-        // Handle special action (sign out)
         bottomNav.setOnItemSelectedListener { item ->
-
+            if (item.itemId == R.id.nav_logout) {
+                signOut()
+                true
+            } else {
                 navController.navigate(item.itemId)
                 true
+            }
         }
+
+    }
+
+    private fun signOut() {
+        UserPrefs.savedIsLoggedIn(this, false)
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 
 

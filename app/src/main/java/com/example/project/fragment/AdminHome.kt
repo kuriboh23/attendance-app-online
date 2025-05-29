@@ -59,9 +59,6 @@ class AdminHome : Fragment() {
         }
         binding.rvUsers.adapter = userAdapter
 
-        binding.ivAdminProfile.setOnClickListener {
-            signOut()
-        }
         binding.teamFilter.setOnClickListener {
             showUserFilterBottomSheet()
         }
@@ -145,15 +142,7 @@ class AdminHome : Fragment() {
         }
     }
 
-    private fun signOut() {
-        UserPrefs.savedIsLoggedIn(requireContext(), false)
 
-        val intent = Intent(requireContext(), MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        startActivity(intent)
-        requireActivity().finish()
-    }
 
     @SuppressLint("SetTextI18n")
     private fun updateUIWithUserStatus() {

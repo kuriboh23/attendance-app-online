@@ -191,6 +191,13 @@ class AdminAttendance : Fragment() {
                             binding.weeksText.text = "Week $weekOfMonth"
 
                             binding.loadingOverlay.visibility = View.GONE
+                        }else{
+                            requireContext().showCustomToast(
+                                "No check data found",
+                                R.layout.error_toast
+                            )
+                            binding.loadingOverlay.visibility = View.GONE
+
                         }
                     }
                 }
@@ -239,6 +246,8 @@ class AdminAttendance : Fragment() {
         }.addOnFailureListener {
             // Handle error if users cannot be retrieved
             teamUserAdapter.updateUsers(emptyList())
+            binding.loadingOverlay.visibility = View.GONE
+
         }
     }
 

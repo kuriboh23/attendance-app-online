@@ -97,6 +97,7 @@ class Leave : Fragment() {
             }
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Failed to load leaves", Toast.LENGTH_SHORT).show()
+                binding.loadingOverlay.visibility = View.GONE
             }
     }
 

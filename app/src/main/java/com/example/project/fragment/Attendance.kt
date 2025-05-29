@@ -130,6 +130,7 @@ class Attendance : Fragment() {
                             )
                             binding.tvLeaveCount.text = "0"
                             checkAdapter.setData(emptyList())
+                            binding.loadingOverlay.visibility = View.GONE
                         }
                     } else {
                         requireContext().showCustomToast(
@@ -138,6 +139,7 @@ class Attendance : Fragment() {
                         )
                         binding.tvLeaveCount.text = "0"
                         checkAdapter.setData(emptyList())
+                        binding.loadingOverlay.visibility = View.GONE
                     }
                 }
                 .addOnFailureListener {
