@@ -202,6 +202,7 @@ class Attendance : Fragment() {
                         }else{
                             checkAdapter.setData(emptyList())
                             requireContext().showCustomToast("No Data Found", R.layout.error_toast)
+                            binding.loadingOverlay.visibility = View.GONE
                         }
                     }
                 }

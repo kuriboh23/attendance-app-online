@@ -70,7 +70,7 @@
                     android:layout_width="42dp"
                     android:layout_height="42dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/user" />
+                    android:src="@drawable/user_logout" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -419,7 +419,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/white"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
